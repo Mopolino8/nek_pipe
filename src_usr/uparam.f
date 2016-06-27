@@ -70,17 +70,17 @@
 !     user parameters
       call user_param_in(iunit)
 
-      rewind(iunit)
-!     Statistics
-      call avg_param_in(iunit)
+!!       rewind(iunit)
+!! !     Statistics
+!!       call avg_param_in(iunit)
 
       rewind(iunit)
 !     restart
       call chkpt_param_in(iunit)
 
-      rewind(iunit)
-!     SEM
-      call sem_param_in(iunit)
+!!       rewind(iunit)
+!! !     SEM
+!!       call sem_param_in(iunit)
 
       return
       end
@@ -97,14 +97,14 @@
 !     user parameters
       call user_param_out(iunit)
 
-!     Statistics
-      call avg_param_out(iunit)
+!! !     Statistics
+!!       call avg_param_out(iunit)
 
 !     restart
       call chkpt_param_out(iunit)
 
-!     SEM
-      call sem_param_out(iunit)
+!! !     SEM
+!!       call sem_param_out(iunit)
 
       return
       end
@@ -128,12 +128,12 @@
       integer ierr
 
 !     namelists; cannot be empty
-      namelist /USERPAR/ bent_phi,bent_radius,z_offset
+      namelist /USERPAR/ upar_dummy
+
 !-----------------------------------------------------------------------
 !     default values
-      bent_phi = 90.
-      bent_radius = 3.1415/4
-      z_offset = 0
+      upar_dummy = 0
+
 !     read the file
       ierr=0
       if (NID.eq.0) then
@@ -147,13 +147,8 @@
       endif
       call err_chk(ierr,'Error reading USERPAR parameters.$')
 
-      ! convert to rad
-      bent_phi = bent_phi/180.*pi
-
 !     broadcast data
-      call bcast(bent_phi,WDSIZE)
-      call bcast(bent_radius,WDSIZE)
-      call bcast(z_offset,WDSIZE)
+      call bcast(upar_dummy,WDSIZE)
 
       return
       end
@@ -173,7 +168,7 @@
       integer ierr
 
 !     namelists; cannot be empty
-      namelist /USERPAR/ bent_phi,bent_radius,z_offset
+      namelist /USERPAR/ upar_dummy
 !-----------------------------------------------------------------------
       ierr=0
       if (NID.eq.0) then

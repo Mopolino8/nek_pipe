@@ -42,7 +42,7 @@ c-----------------------------------------------------------------------
       include 'INPUT' ! PARAM
       include 'SOLN_DEF'      
       include 'SOLN'  ! V[XYZ],V[XYZ]P
-      include 'CHKPOINT'
+c     include 'CHKPOINT'
 
       real, external :: dnekclock, glmax ! defined in math.f
 
@@ -135,14 +135,14 @@ c-----------------------------------------------------------------------
       ! Statistics
 
 
-      ! Restart routines
-      call checkpoint
-      ! This call is already executed in setics()/ic.f
-      ! However, it has the wrong time time-value (=0.0) 
-      ! when using our restarting, which initializes 'time' 
-      if (istep.eq.0.and.timeio.ne.0.0)  then
-         ntdump = int( (time+1e-14)/timeio )
-      endif
+!!       ! Restart routines (uncomment the INCLUDE statement above)
+!!       call checkpoint
+!!       ! This call is already executed in setics()/ic.f
+!!       ! However, it has the wrong time time-value (=0.0) 
+!!       ! when using our restarting, which initializes 'time' 
+!!       if (istep.eq.0.and.timeio.ne.0.0)  then
+!!          ntdump = int( (time+1e-14)/timeio )
+!!       endif
 
       return
       end
@@ -162,6 +162,8 @@ c     NOTE ::: This subroutine MAY NOT be called by every process
       include 'INPUT'  ! IF3D
       include 'NEKUSE_DEF'
       include 'NEKUSE'! U[XYZ],PA,TEMP,CBU
+
+      integer, intent(in) :: ix,iy,iz,iside,ieg
 
       ux =  0.0
       uy =  0.0
@@ -190,7 +192,9 @@ c-----------------------------------------------------------------------
       include 'SIZE'  ! L[XYZ]1,LELV
       include 'NEKUSE_DEF'
       include 'NEKUSE'! U[XYZ], [XYZ]
-      include 'USERPAR' 
+      include 'USERPAR'
+
+      integer, intent(in) :: ix,iy,iz,ieg
 
       ux = 0.0
       uy = 0.0
