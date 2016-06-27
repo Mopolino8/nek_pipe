@@ -1,5 +1,6 @@
 *.swp
 
+1
 makefile
 compiler.out
 couette.f
@@ -7,3 +8,4 @@ couette.map
 couette.re2
 couette.rea
 obj/
+nek5000
