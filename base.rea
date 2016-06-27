@@ -3,7 +3,7 @@
    3 DIMENSIONAL RUN
          118  PARAMETERS FOLLOW
    1.00000     P001: DENSITY
-  -10.         P002: VISCOS
+  -500.        P002: VISCOS
    0.00000     P003: : : BETAG
    0.00000     P004: : : GTHETA
    0.00000     P005: : : PGRADX
