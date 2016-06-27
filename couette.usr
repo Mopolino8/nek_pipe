@@ -163,6 +163,20 @@ c     NOTE ::: This subroutine MAY NOT be called by every process
       include 'NEKUSE_DEF'
       include 'NEKUSE'! U[XYZ],PA,TEMP,CBU
 
+      ux =  0.0
+      uy =  0.0
+      uz =  0.0
+
+      if (y .lt. 0) then
+
+         ux = -1.0
+
+      else
+
+         ux =  1.0
+
+      endif
+
       return
       end
 
