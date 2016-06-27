@@ -7,5 +7,13 @@ couette.f
 couette.map
 couette.re2
 couette.rea
+couette.sch
 obj/
 nek5000
+
+SESSION.NAME
+log
+
+couette0.*
+divcouette0.*
+strfcouette0.*
