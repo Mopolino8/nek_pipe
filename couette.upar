@@ -1,0 +1,9 @@
+&USERPAR
+ bent_phi=90.000, ! bent section in degress. Bending the pipe centerline around y-axis
+ bent_radius=1.5, !1.66666666666666666, ! bent radius (defined from pipe centerline)
+ z_offset=-5, ! corresponds to upstream section, exptected to be <= 0. All z-values >0 are considered as bent according to bent_phi
+ /
+&CHKPOINT
+ CHKPTSTEP=50,
+ IFCHKPTRST=T,
+ /

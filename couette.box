@@ -1,0 +1,14 @@
+base.rea
+3                      spatial dimension
+1                      number of fields
+#
+#
+#
+#========================================================
+#
+Box
+-2    -2   -2                  nel_x, nel_y, nel_z
+ 0.    1.   1.                 x0, x1, ratio
+-1.    1.   1.                 y0, y1, ratio
+ 0.    1.   1.                 z0, z1, ratio
+P  ,P  ,W  ,W  ,P  ,P          BCs (3 chars each)
