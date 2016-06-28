@@ -201,21 +201,28 @@ c-----------------------------------------------------------------------
          include 'SIZE'  ! LDIMT needed by NEKUSE
          include 'NEKUSE_DEF'
          include 'NEKUSE' ! u[xyz], [xyz]
+         include 'SOLN_DEF'
+         include 'SOLN' ! jp
 
          integer, intent(in) :: ix,iy,iz,iside,ieg
 
-         ux =  0.0
-         uy =  0.0
-         uz =  0.0
-
-         if (y .lt. 0) then
-
-            ux = -1.0
-
+         if (jp.eq.0) then
+            ! non-linear mode
+            ! (time goes forward)
+            ux =  0.0
+            uy =  0.0
+            uz =  0.0
+            if (y .lt. 0) then
+               ux = -1.0
+            else
+               ux =  1.0
+            endif
          else
-
-            ux =  1.0
-
+            ! perturbation mode
+            ! (time goes backward)
+            ux =  0.0
+            uy =  0.0
+            uz =  0.0
          endif
 
       return
