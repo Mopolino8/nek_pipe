@@ -128,11 +128,12 @@
       integer ierr
 
 !     namelists; cannot be empty
-      namelist /USERPAR/ upar_dummy
+      namelist /USERPAR/ upar_dummy, init_amp
 
 !-----------------------------------------------------------------------
 !     default values
       upar_dummy = 0
+      init_amp = 1.0
 
 !     read the file
       ierr=0
@@ -148,7 +149,8 @@
       call err_chk(ierr,'Error reading USERPAR parameters.$')
 
 !     broadcast data
-      call bcast(upar_dummy,WDSIZE)
+      call bcast(upar_dummy, WDSIZE)
+      call bcast(init_amp, WDSIZE)
 
       return
       end
@@ -168,7 +170,7 @@
       integer ierr
 
 !     namelists; cannot be empty
-      namelist /USERPAR/ upar_dummy
+      namelist /USERPAR/ upar_dummy, init_amp
 !-----------------------------------------------------------------------
       ierr=0
       if (NID.eq.0) then

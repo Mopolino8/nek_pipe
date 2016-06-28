@@ -1,5 +1,6 @@
 &USERPAR
  upar_dummy = 0 ! I hate these lists
+ init_amp = 0.01
  /
 &CHKPOINT ! not in use for now
  CHKPTSTEP=50,

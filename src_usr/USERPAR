@@ -1,5 +1,6 @@
 !     include file to store user parameters
-      integer upar_dummy
+      integer :: upar_dummy
+      double precision :: init_amp
 
 !     common blocks
-      common /UPARAM/ upar_dummy
+      common /UPARAM/ upar_dummy, init_amp

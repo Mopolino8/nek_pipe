@@ -233,6 +233,7 @@ c-----------------------------------------------------------------------
          include 'SIZE'  ! LDIMT needed by NEKUSE
          include 'NEKUSE_DEF'
          include 'NEKUSE' ! u[xyz], [xyz]
+         include 'USERPAR' ! init_amp
 
          integer, intent(in) :: ix,iy,iz,ieg
 
@@ -240,9 +241,9 @@ c-----------------------------------------------------------------------
          !uy = 0.0
          !uz = 0.0
 
-         ux = rnd_loc(-1.0, 1.0)
-         uy = rnd_loc(-1.0, 1.0)
-         uz = rnd_loc(-1.0, 1.0)
+         ux = init_amp*rnd_loc(-1.0, 1.0)
+         uy = init_amp*rnd_loc(-1.0, 1.0)
+         uz = init_amp*rnd_loc(-1.0, 1.0)
 
       return
       end
