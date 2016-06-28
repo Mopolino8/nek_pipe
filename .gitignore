@@ -1,6 +1,5 @@
 *.swp
 
-1
 makefile
 compiler.out
 couette.f
