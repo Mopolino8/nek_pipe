@@ -132,8 +132,8 @@
 
 !-----------------------------------------------------------------------
 !     default values
-      upar_dummy = 0
-      init_amp = 1.0
+      upar_dummy = 1.0
+      init_amp   = 1.0
 
 !     read the file
       ierr=0
