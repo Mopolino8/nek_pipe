@@ -258,6 +258,8 @@ c-----------------------------------------------------------------------
 
          include 'SIZE_DEF'
          include 'SIZE' ! NID
+         include 'PARALLEL_DEF' 
+         include 'PARALLEL' ! WDSIZE
          include 'USERPAR'
 
          integer :: iseed
@@ -273,6 +275,7 @@ c-----------------------------------------------------------------------
             iseed = int(dnekclock())
             call zbqlini(iseed)
          endif
+         call bcast(zbqlix, WDSIZE)
 
       return
       end
