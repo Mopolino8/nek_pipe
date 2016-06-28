@@ -63,10 +63,11 @@ c-----------------------------------------------------------------------
 
       subroutine userchk
 
+
          implicit none
 
          include 'SIZE_DEF'
-         include 'SIZE'  ! L[XYZ]1,LELV,NID
+         include 'SIZE'  ! L[XYZ]1, LELV, NID
          include 'MASS_DEF'
          include 'MASS' ! BM1
          include 'TSTEP_DEF'
@@ -77,7 +78,9 @@ c-----------------------------------------------------------------------
          include 'SOLN'  ! V[XYZ],V[XYZ]P
          ! include 'CHKPOINT'
 
-         real, external :: dnekclock, glmax ! defined in math.f
+         !real, external :: dnekclock ! defined in comm_mpi.f
+         real, external :: glmin, glmax ! defined in math.f
+
 
          real divv
          COMMON /SCRUZ/  DIVV (LX2,LY2,LZ2,LELV)
@@ -102,10 +105,11 @@ c-----------------------------------------------------------------------
          real h2(lx1,ly1,lz1,lelv)
          real rhs(lx1,ly1,lz1,lelv)
 
-         integer n, maxit
+         integer n, nn, maxit
          real toler, p22 
 
-         n = nelv*lx1*ly1*lz1
+         n  = nelv*lx1*ly1*lz1
+         nn = nelv*nx1*ny1*nz1
 
          ! Output maximum of divergence
          ! This maps divergence from pressure (Pn-2) to velocity mesh (Pn)
@@ -178,22 +182,23 @@ c-----------------------------------------------------------------------
 !           ntdump = int( (time+1e-14)/timeio )
 !        endif
 
+
+      ! output initial condition
+      if (istep.eq.0) then
+         call outpost(vx,vy,vz,pr,t,'init')
+      endif
+
       return
       end
 
 c-----------------------------------------------------------------------
 
       subroutine userbc (ix,iy,iz,iside,ieg)
-         ! NOTE ::: This subroutine MAY NOT be called by every process
 
          implicit none
 
          include 'SIZE_DEF'
          include 'SIZE'  ! LDIMT needed by NEKUSE
-         ! include 'PARALLEL_DEF'
-         ! include 'PARALLEL'  ! GLLEL
-         ! include 'INPUT_DEF'
-         ! include 'INPUT'  ! IF3D
          include 'NEKUSE_DEF'
          include 'NEKUSE' ! u[xyz], [xyz]
 
@@ -220,19 +225,24 @@ c-----------------------------------------------------------------------
 
       subroutine useric (ix,iy,iz,ieg)
 
+         use randgen ! rnd_loc()
+
          implicit none
 
          include 'SIZE_DEF'
          include 'SIZE'  ! LDIMT needed by NEKUSE
-         ! include 'USERPAR'
          include 'NEKUSE_DEF'
          include 'NEKUSE' ! u[xyz], [xyz]
 
          integer, intent(in) :: ix,iy,iz,ieg
 
-         ux = 0.0
-         uy = 0.0
-         uz = 0.0
+         !ux = 0.0
+         !uy = 0.0
+         !uz = 0.0
+
+         ux = rnd_loc(-1.0, 1.0)
+         uy = rnd_loc(-1.0, 1.0)
+         uz = rnd_loc(-1.0, 1.0)
 
       return
       end
@@ -241,12 +251,27 @@ c-----------------------------------------------------------------------
 
       subroutine usrdat
 
+         use randgen ! zbqlini()
+
          implicit none
 
-         include 'USERPAR' 
+         include 'SIZE_DEF'
+         include 'SIZE' ! NID
+         include 'USERPAR'
+
+         integer :: iseed
+         real, external :: dnekclock ! defined in comm_mpi.f
 
          ! Read user module parameters
          call uprm_read
+
+
+         ! initialise random number generator from the 'randgen' module
+         ! only on rank=0
+         if (NID.eq.0) then
+            iseed = int(dnekclock())
+            call zbqlini(iseed)
+         endif
 
       return
       end
