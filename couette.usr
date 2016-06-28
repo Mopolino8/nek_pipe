@@ -185,7 +185,7 @@ c-----------------------------------------------------------------------
 
       ! output initial condition
       if (istep.eq.0) then
-         call outpost(vx,vy,vz,pr,t,'init')
+         call outpost(vx,vy,vz,pr,t,'ini')
       endif
 
       return
@@ -236,10 +236,6 @@ c-----------------------------------------------------------------------
          include 'USERPAR' ! init_amp
 
          integer, intent(in) :: ix,iy,iz,ieg
-
-         !ux = 0.0
-         !uy = 0.0
-         !uz = 0.0
 
          ux = init_amp*rnd_loc(-1.0, 1.0)
          uy = init_amp*rnd_loc(-1.0, 1.0)

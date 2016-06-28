@@ -22,14 +22,14 @@ else
 
 	mkdir $saveDir
 	
-	mv couette0.f*     $saveDir/
-	mv initcouette0.f* $saveDir/
-	mv divcouette0.f*  $saveDir/
-	mv stfcouette0.f*  $saveDir/
-	mv hpts.out        $saveDir/
-	mv logfile*        $saveDir/
-	mv errfile*        $saveDir/
-	mv SESSION.NAME    $saveDir/
-	mv couette.sch     $saveDir/
+	mv couette0.f*    $saveDir/
+	mv inicouette0.f* $saveDir/
+	mv divcouette0.f* $saveDir/
+	mv stfcouette0.f* $saveDir/
+	mv hpts.out       $saveDir/
+	mv logfile*       $saveDir/
+	mv errfile*       $saveDir/
+	mv SESSION.NAME   $saveDir/
+	mv couette.sch    $saveDir/
 
 fi
