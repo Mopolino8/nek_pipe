@@ -17,4 +17,4 @@ EOF
 #
 ./makenek couette
 #
-rm box.rea box.tmp 1
+rm box.rea box.tmp
