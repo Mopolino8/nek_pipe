@@ -15,6 +15,6 @@ box
 couette
 EOF
 #
-rm box.rea box.tmp *.sch
-#
 ./makenek couette
+#
+rm box.rea box.tmp 1
