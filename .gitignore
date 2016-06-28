@@ -2,6 +2,7 @@
 
 makefile
 compiler.out
+*.mod
 couette.f
 couette.map
 couette.re2
