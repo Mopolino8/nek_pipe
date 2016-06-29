@@ -8,11 +8,12 @@ couette.map
 couette.re2
 couette.rea
 couette.sch
+inicouette*
 obj/
 nek5000
 
 SESSION.NAME
-log
+log*
 
 couette0.*
 divcouette0.*
