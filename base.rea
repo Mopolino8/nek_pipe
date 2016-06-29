@@ -12,11 +12,11 @@
    1.00000     P008: CONDUCT
    0.00000     P009:
    0.00000     P010: FINTIME
-   1003        P011: NSTEPS
+   10          P011: NSTEPS
    1.0E-02     P012: DT
    0.00000     P013: IOCOMM
    0.00000     P014: IOTIME
-   100         P015: IOSTEP
+   1           P015: IOSTEP
    0.00000     P016: PSSOLVER: 0=default
    1.00000     P017:
   0.500000E-01 P018: GRID < 0 --> # cells on screen
@@ -28,7 +28,7 @@
   0.100000E-01 P024: TOLREL
   0.100000E-01 P025: TOLABS
    1.00000     P026: COURANT/NTAU
-   3.00000     P027: TORDER
+   1.00000     P027: TORDER
    0.00000     P028: TORDER: mesh velocity (0: p28=p27)
    0.00000     P029: = magnetic visc if > 0, = -1/Rm if < 0
    0.00000     P030: > 0 ==> properties set in uservp()
