@@ -23,9 +23,7 @@ else
 	mkdir $saveDir
 	
 	mv couette0.f*    $saveDir/
-	mv inicouette0.f* $saveDir/
-	mv divcouette0.f* $saveDir/
-	mv stfcouette0.f* $saveDir/
+	mv ???couette0*   $saveDir/
 	mv hpts.out       $saveDir/
 	mv logfile*       $saveDir/
 	mv errfile*       $saveDir/

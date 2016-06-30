@@ -13,4 +13,5 @@ rm -rf compiler.out \
 	    field* \
 		 makefile \
 		 nek5000 \
-		 obj
+		 obj \
+		 src_usr/*.mod

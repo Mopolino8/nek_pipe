@@ -4,7 +4,7 @@
 
 
          real divv
-         COMMON /SCRUZ/  DIVV (LX2,LY2,LZ2,LELV)
+         common /SCRUZ/  DIVV (LX2,LY2,LZ2,LELV)
          real work1(lx1,ly1,lz1,lelv),
      $        work2(lx1,ly1,lz1,lelv),
      $        divm1(lx1,ly1,lz1,lelv)
