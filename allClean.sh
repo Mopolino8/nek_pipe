@@ -7,6 +7,9 @@ rm -rf compiler.out \
 		 adjcouette0.* \
 		 divcouette0.* \
 		 stfcouette0.* \
+		 SESSION.NAME \
+		 couette.sch \
+		 log* \
 	    field* \
 		 makefile \
 		 nek5000 \
