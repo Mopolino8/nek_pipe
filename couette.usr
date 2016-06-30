@@ -63,8 +63,24 @@ c-----------------------------------------------------------------------
 
       subroutine userchk
 
-
          implicit none
+
+         interface
+            FUNCTION wrap_revolve(check, capo, fine,
+      +                           snaps_in, info, nid)
+               implicit none
+               integer :: wrap_revolve, check, capo, fine
+               integer :: snaps_in, info, nid
+            END FUNCTION wrap_revolve 
+            SUBROUTINE wrap_revolve_reset()
+               implicit none
+            END SUBROUTINE wrap_revolve_reset
+            FUNCTION adj_stack_empty()
+               implicit none
+               integer adj_stack_empty
+            END FUNCTION adj_stack_empty 
+         end interface
+
 
          include 'SIZE_DEF'
          include 'SIZE'  ! L[XYZ]1, LELV, NID
@@ -74,120 +90,187 @@ c-----------------------------------------------------------------------
          include 'TSTEP' ! ISTEP,IOSTEP
          include 'INPUT_DEF'
          include 'INPUT' ! PARAM
-         include 'SOLN_DEF'      
+         include 'SOLN_DEF'
          include 'SOLN'  ! V[XYZ],V[XYZ]P
          ! include 'CHKPOINT'
 
-         !real, external :: dnekclock ! defined in comm_mpi.f
-         real, external :: glmin, glmax ! defined in math.f
+         include 'ADJOINT_DEF'
+         include 'ADJOINT'
+
+         !common /local_adj/ coeff_v, objective_v
+         !real Ek,Ek1
+         integer n, count  !, gstep
+         integer :: whatodo, check, oldcapo, capo, fine, snaps_in, info
+         integer :: ierr,tmp, ssize 
+         real, allocatable  :: chkp(:,:,:,:)
+         character*80 base,ctr,inputname1,filepath
+         character*8, fmt, suffix
+         real cfl,t0,t1,t2,t3,t4,t5,t6,twrite,tread
+         logical :: exist,first,wcheckpoint,firstvx
 
 
-         real divv
-         COMMON /SCRUZ/  DIVV (LX2,LY2,LZ2,LELV)
-         real work1(lx1,ly1,lz1,lelv),
-     $        work2(lx1,ly1,lz1,lelv),
-     $        divm1(lx1,ly1,lz1,lelv)
-         integer ntdump
-         common /rdump/ ntdump
-
-         real rtime, tic
-         save rtime
-         data rtime  /0./
-         real divmax
-
-         real work3(lx1,ly1,lz1,lelv),
-     $        work4(lx1,ly1,lz1,lelv),
-     $        v_s(lx1,ly1,lz1,lelv), ! streamwise
-     $        omega_s(lx1,ly1,lz1,lelv)
-         real vorticity(lx1*ly1*lz1*lelv,3)
-         real phi(lx1,ly1,lz1,lelv)
-         real h1(lx1,ly1,lz1,lelv)
-         real h2(lx1,ly1,lz1,lelv)
-         real rhs(lx1,ly1,lz1,lelv)
-
-         integer n, nn, maxit
-         real toler, p22 
-
-         n  = nelv*lx1*ly1*lz1
-         nn = nelv*nx1*ny1*nz1
-
-         ! Output maximum of divergence
-         ! This maps divergence from pressure (Pn-2) to velocity mesh (Pn)
-         call mappr(divm1,divv,work1,work2)
-         ! and averages the divergence on element boundaries
-         ! In contrast to outpost(), which does not average
-         ! when writing divergence in pressure ouput 
-         ! -> therefore, slight discrepancy < ~ factor 2
-
-         divmax = glmax(divm1, nx1*ny1*nz1*nelv)
-
-         if (nid.eq.0) write(*,*) '||div||_max', Divmax
-
-
-         if (mod(ISTEP,IOSTEP).eq.0.and. istep.gt.0) then
-            !
-            ! compute and output some postprocessing quantities
-
-!           ! output divergence (in pressure field)
-!           call outpost(vx,vy,vz,divv,t,'div')
-!
-!           ! Compute lambda_2
-!           if (NID.eq.0) then
-!              write(6,*) ISTEP,IOSTEP,TIME,' compute lambda2'
-!           endif
-!           call lambda2(t(1,1,1,1,1))
-!
-!           ! Output streamfunction phi and velocity v_s of streamwise direction
-!           !
-!           ! compute vorticity
-!           call rzero(vorticity,3*n)
-!           call comp_vort3(vorticity,work1,work2,vx,vy,vz)  
-!           call copy(vorticity(1,1),work1,n);
-!           call copy(vorticity(1,2),work2,n);
-!           call copy(vorticity(1,3),work3,n);
-!           call chsign(work1,n);
-!           call chsign(work2,n);
-!           call chsign(work3,n);
-!           call rzero(h2,n)
-!           call chsign(omega_s,n)
-!           !
-!           ! multiply with the mass matrix
-!           call col3(rhs,omega_s,bm1,n)
-!           ! setup Poisson problem: h2=0, h1=1
-!           call rone(h1,n)
-!           ! set solver tolerance
-!           ! and save param22
-!           toler = 1e-14
-!           p22 = param(22)
-!           param(22) = toler
-!           maxit = 10000    
-!           ! Solve Poisson equation:    
-!           call hmholtz('PHI ',phi,rhs,h1,h2,v2mask,vmult,1,
-!    $                   toler,maxit,1)
-!           ! reset param22
-!           param(22) = p22
-!
-!           call outpost(rhs,phi,v_s,pr,t,'stf')
-
+         ! output initial condition
+         ! testing only
+         if (istep.eq.0) then
+            call outpost(vx,vy,vz,pr,t,'ini')
          endif
 
-
-!        ! Restart routines
-!        ! (uncomment the INCLUDE statement at the beginning)
-!        call checkpoint
-!        ! This call is already executed in setics()/ic.f
-!        ! However, it has the wrong time time-value (=0.0) 
-!        ! when using our restarting, which initializes 'time' 
-!        if (istep.eq.0.and.timeio.ne.0.0)  then
-!           ntdump = int( (time+1e-14)/timeio )
-!        endif
+         n=nx1*ny1*nz1*nelv
+         capo = 0
+         fine = 10  ! tell revolve how many time steps
+         snaps_in=2 ! max number of time steps revolve saves
+         info=2     ! described in the revolve paper
+         first = .true.
+         check = -1
+         !call MPI_Comm_rank(MPI_COMM_WORLD,rank,ier)
 
 
-      ! output initial condition
-      if (istep.eq.0) then
-         call outpost(vx,vy,vz,pr,t,'ini')
-      endif
 
+
+      ALLOCATE(chkp(n,3,snaps_in,nbdinp))
+
+      whatodo=wrap_revolve(check,capo,fine,snaps_in,info,nid)
+      !if (nid.eq.0) write(*,*) 'whatodo = ', whatodo
+
+      select case(whatodo) 
+      case(2)
+C        print *, 'Store in checkpoint number ',check, '.'
+        call copy(chkp(:,1,check+1,1),vxlag(1,1,1,1,1),n)
+        call copy(chkp(:,2,check+1,1),vylag(1,1,1,1,1),n)
+        call copy(chkp(:,3,check+1,1),vzlag(1,1,1,1,1),n)
+        call copy(chkp(:,1,check+1,2),vxlag(1,1,1,1,2),n)
+        call copy(chkp(:,2,check+1,2),vylag(1,1,1,1,2),n)
+        call copy(chkp(:,3,check+1,2),vzlag(1,1,1,1,2),n)
+        call copy(chkp(:,1,check+1,3),vx,n)
+        call copy(chkp(:,2,check+1,3),vy,n)
+        call copy(chkp(:,3,check+1,3),vz,n)
+      case default
+        if(nid .eq. 0) then
+          print *, 'Error!'
+        end if
+      end select
+
+      ! revolve algorithm
+      !
+      do while (whatodo .ne. 6)
+      oldcapo=capo+1;
+      whatodo=wrap_revolve(check, capo, fine, snaps_in, info,nid);
+      select case(whatodo) 
+      case(1) 
+         ! ADVANCE
+C        print *, 'Advance from', oldcapo, ' to ', capo, '.'
+        time = (oldcapo)*DT
+        ifpert = .false.
+C        npert=0
+        ifadj  = .false.
+        count=0; 
+        do istep=oldcapo,capo
+        call nek_advance
+        call compute_cfl(cfl,vx,vy,vz,dt)
+        if (nid.eq.0) write(*,*) 'cfl ',cfl 	
+        end do
+      case(2)
+         ! STORE
+C        print *, 'Store in checkpoint number ',check, '.'
+        call copy(chkp(:,1,check+1,1),vxlag(1,1,1,1,1),n)
+        call copy(chkp(:,2,check+1,1),vylag(1,1,1,1,1),n)
+        call copy(chkp(:,3,check+1,1),vzlag(1,1,1,1,1),n)
+        call copy(chkp(:,1,check+1,2),vxlag(1,1,1,1,2),n)
+        call copy(chkp(:,2,check+1,2),vylag(1,1,1,1,2),n)
+        call copy(chkp(:,3,check+1,2),vzlag(1,1,1,1,2),n)
+        call copy(chkp(:,1,check+1,3),vx,n)
+        call copy(chkp(:,2,check+1,3),vy,n)
+        call copy(chkp(:,3,check+1,3),vz,n)
+        if(firstvx .eqv. .true.) then
+        firstvx=.false.
+        end if
+      case(3) 
+         ! firsturn
+        if(first .eqv. .true.) then 
+        call copy(vxp,vx,n)
+        call copy(vyp,vy,n)
+        call copy(vzp,vz,n)
+        first=.false.
+        end if
+C        call outpost(vx,vy,vz,pr,t,'lst')
+C        REVERSE
+
+         ifpert = .true.
+         npert = 1 !this is in the common block from SIZE
+         ifadj  = .true. 
+C        call full_restart_save(istep)
+         !t = real(gstep)*real(DT)
+         !tp = real(gstep)*real(DT)
+         !gstep=gstep-1
+C         call outpost(vx,vy,vz,pr,t,'fdd')
+C         call outpost(vxp,vyp,vzp,prp,tp,'adj')
+         call nek_advance
+         call compute_cfl(cfl,vx,vy,vz,dt)
+         if (nid.eq.0) write(*,*) 'cfl ',cfl 	
+
+      case(4) 
+         ! there actually is no forward step here because
+         ! we're not doing AD
+         ! this is youturn
+C        print *, 'Forward and reverse one step.'
+C        FORWARD
+        t = capo*DT
+        ifpert = .false.
+C        npert = 0 !this is in the common block from SIZE
+        ifadj  = .false.
+        istep=capo
+C        print *, 'istep: ', istep, ' ', capo, ' ', fine, ' ', time
+C        if (mod(istep,100).eq.0) then
+C          t = real(gstep)*real(DT)
+C          call outpost(vx,vy,vz,pr,t,'fdd')
+C        end if
+C        REVERSE
+        
+         ifpert = .true.
+         npert = 1 !this is in the common block from SIZE
+         ifadj  = .true. 
+         call nek_advance
+         if (mod(istep,100).eq.0) then
+           !tp = real(gstep)*real(DT)
+           call outpost(vxp,vyp,vzp,prp,tp,'adj')
+         endif
+         call compute_cfl(cfl,vx,vy,vz,dt)
+         if (nid.eq.0) write(*,*) 'cfl ',cfl 	
+         !gstep=gstep-1
+      case(5)
+C        print *, 'Restore from checkpoint number ', check
+        call copy(vxlag(1,1,1,1,1),chkp(:,1,check+1,1),n)
+        call copy(vylag(1,1,1,1,1),chkp(:,2,check+1,1),n)
+        call copy(vzlag(1,1,1,1,1),chkp(:,3,check+1,1),n)
+        call copy(vxlag(1,1,1,1,2),chkp(:,1,check+1,2),n)
+        call copy(vylag(1,1,1,1,2),chkp(:,2,check+1,2),n)
+        call copy(vzlag(1,1,1,1,2),chkp(:,3,check+1,2),n)
+        call copy(vx,chkp(:,1,check+1,3),n)
+        call copy(vy,chkp(:,2,check+1,3),n)
+        call copy(vz,chkp(:,3,check+1,3),n)
+      case(6)
+        if(nid .eq. 0) then
+          print *, 'Done'
+        end if
+      case default
+        if(nid .eq. 0) then
+          print *, 'Error!'
+        end if
+      end select
+      enddo
+
+
+      !tp = real(gstep)*real(DT)
+C      call outpost(vxp,vyp,vzp,prp,tp,'rev')
+      DEALLOCATE(chkp)
+      ! reset revolve so it can be used for the next run
+      call wrap_revolve_reset();
+
+      ssize=ssize-1
+      !end do
+
+
+      call exitt()
       return
       end
 
@@ -208,6 +291,7 @@ c-----------------------------------------------------------------------
 
          if (jp.eq.0) then
             ! non-linear mode
+            ! direct problem
             ! (time goes forward)
             ux =  0.0
             uy =  0.0
@@ -219,6 +303,7 @@ c-----------------------------------------------------------------------
             endif
          else
             ! perturbation mode
+            ! adjoint problem
             ! (time goes backward)
             ux =  0.0
             uy =  0.0
