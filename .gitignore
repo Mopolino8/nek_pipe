@@ -19,6 +19,7 @@ SESSION.NAME
 log*
 
 couette0.*
+adjcouette0.*
 divcouette0.*
 stfcouette0.*
 field*
