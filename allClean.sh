@@ -3,6 +3,7 @@ rm -rf compiler.out \
 		 couette.map \
 		 couette.re2 \
 		 couette.rea \
+		 inicouette0.* \
 		 adjcouette0.* \
 		 divcouette0.* \
 		 stfcouette0.* \
