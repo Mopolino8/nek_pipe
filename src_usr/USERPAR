@@ -1,6 +1,9 @@
 !     include file to store user parameters
-      real :: upar_dummy
-      real :: init_amp
+      integer :: upar_dummy, usr_debug
+      !
+      real    :: init_amp
+      integer :: rvlv_info, rvlv_snaps
 
 !     common blocks
-      common /UPARAM/ upar_dummy, init_amp
+      common /UPARAM/ upar_dummy, usr_debug,
+     $                init_amp, rvlv_info, rvlv_snaps

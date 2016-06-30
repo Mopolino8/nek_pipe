@@ -128,12 +128,17 @@
       integer ierr
 
 !     namelists; cannot be empty
-      namelist /USERPAR/ upar_dummy, init_amp
+      namelist /USERPAR/ upar_dummy, usr_debug
+      namelist /OPTPERT/ init_amp, rvlv_info, rvlv_snaps
 
 !-----------------------------------------------------------------------
 !     default values
-      upar_dummy = 1.0
+      upar_dummy = 1
+      usr_debug  = 1
+      !
       init_amp   = 1.0
+      rvlv_info  = 1
+      rvlv_snaps = 1
 
 !     read the file
       ierr=0
@@ -150,7 +155,11 @@
 
 !     broadcast data
       call bcast(upar_dummy, WDSIZE)
-      call bcast(init_amp, WDSIZE)
+      call bcast(usr_debug,  WDSIZE)
+      !
+      call bcast(init_amp,   WDSIZE)
+      call bcast(rvlv_info,  WDSIZE)
+      call bcast(rvlv_snaps, WDSIZE)
 
       return
       end
@@ -160,17 +169,18 @@
       implicit none
 
       include 'SIZE_DEF'
-      include 'SIZE'            !
-      include 'USERPAR'         !
+      include 'SIZE'
+      include 'USERPAR'
 
 !     argument list
-      integer fid               ! file id
+      integer fid ! file id
 
 !     local variables
       integer ierr
 
 !     namelists; cannot be empty
-      namelist /USERPAR/ upar_dummy, init_amp
+      namelist /USERPAR/ upar_dummy, usr_debug
+      namelist /OPTPERT/ init_amp, rvlv_info, rvlv_snaps
 !-----------------------------------------------------------------------
       ierr=0
       if (NID.eq.0) then
