@@ -129,14 +129,20 @@
 
 !     namelists; cannot be empty
       namelist /USERPAR/ upar_dummy, usr_debug,
-     $                   init_amp, rvlv_info, rvlv_snaps
+     $                   nlopt_e0,
+     $                   stasc_eps, stasc_res,
+     $                   rvlv_info, rvlv_snaps
 
 !-----------------------------------------------------------------------
 !     default values
       upar_dummy = 1
       usr_debug  = 1
       !
-      init_amp   = 1.0
+      nlopt_e0   = 1.0
+      !
+      stasc_eps  = 0.1
+      stasc_res  = 1e-3
+      !
       rvlv_info  = 1
       rvlv_snaps = 1
 
@@ -157,7 +163,11 @@
       call bcast(upar_dummy, WDSIZE)
       call bcast(usr_debug,  WDSIZE)
       !
-      call bcast(init_amp,   WDSIZE)
+      call bcast(nlopt_e0,   WDSIZE)
+      !
+      call bcast(stasc_eps,  WDSIZE)
+      call bcast(stasc_res,  WDSIZE)
+      !
       call bcast(rvlv_info,  WDSIZE)
       call bcast(rvlv_snaps, WDSIZE)
 
@@ -180,7 +190,9 @@
 
 !     namelists; cannot be empty
       namelist /USERPAR/ upar_dummy, usr_debug,
-     $                   init_amp, rvlv_info, rvlv_snaps
+     $                   nlopt_e0,
+     $                   stasc_eps, stasc_res,
+     $                   rvlv_info, rvlv_snaps
 !-----------------------------------------------------------------------
       ierr=0
       if (NID.eq.0) then

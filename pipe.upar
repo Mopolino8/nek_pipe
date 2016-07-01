@@ -1,9 +1,11 @@
 &USERPAR
- upar_dummy = 0  ! I hate these lists
- usr_debug = 1   ! debug flag [1/0]
- init_amp = 0.01 ! amplitude of random initial condition
- rvlv_info = 1   ! print revolve algorithm information [1/0]
- rvlv_snaps = 50 ! upper bound on number of checkpoints
+ upar_dummy = 0    ! I hate these lists
+ usr_debug  = 1    ! debug flag [1/0]
+ nlopt_e0   = 0.01 ! initial energy
+ stasc_eps  = 0.1  ! epsilon in steepest ascent update
+ stasc_res  = 1e-3 ! residual on steepest ascent iterations
+ rvlv_info  = 1    ! print revolve algorithm information [1/0]
+ rvlv_snaps = 50   ! upper bound on number of checkpoints in revolve
  /
 &CHKPOINT ! not in use for now
  CHKPTSTEP=50,
