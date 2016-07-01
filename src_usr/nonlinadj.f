@@ -17,6 +17,11 @@
       !
       ! jcanton@mech.kth.se
 
+      ! TODO
+      ! - move here the namelist for the parameters? (I hate those lists)
+      ! - some steps of revolve produce the following error message:
+      !   'Problem calculating new DT Discriminant=' with negative discriminant
+
       implicit none
 
       ! Interface to the functions in the revolve library
@@ -48,13 +53,11 @@
 
          include 'SIZE_DEF' ! LDMT1
          include 'SIZE'
-         !include 'MASS_DEF'
-         !include 'MASS'         
          include 'TSTEP_DEF' ! ISTEP
          include 'TSTEP' ! DT
          include 'INPUT_DEF'
          include 'INPUT' ! IFPERT
-         include 'SOLN_DEF' ! v[xyz], pr
+         include 'SOLN_DEF' ! v[xyz], pr, v[xyz]lag
          include 'SOLN'
          include 'ADJOINT_DEF' ! IFADJ
          include 'ADJOINT'
@@ -124,7 +127,7 @@
          !
          n = nx1*ny1*nz1*nelv
          !
-         allocate(chkp(n,3,snaps_in,nbdinp))
+         allocate(chkp(n,3,snaps,nbdinp))
 
 
          ! Initialise the algorithm

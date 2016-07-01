@@ -1,20 +1,15 @@
-#
-genbox << EOF
-couette.box
+../pipeMeshNek/pipeMeshNek
+
+reatore2 << EOF
+base
+pipe
 EOF
-#
+
 genmap << EOF
-box
+pipe
 0.05
 EOF
-#
-mv box.map couette.map
-#
-reatore2 << EOF
-box
-couette
-EOF
-#
-./makenek couette
-#
-rm box.rea box.tmp
+
+rm base2d.rea base.rea
+
+./makenek pipe

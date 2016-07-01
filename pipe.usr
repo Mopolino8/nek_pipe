@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-c  Couette flow
+c  Pipe-Poiseuille flow
 c  jcanton@mech.kth.se
 c-----------------------------------------------------------------------
 
@@ -30,12 +30,26 @@ c-----------------------------------------------------------------------
          include 'SIZE'  ! LDIMT needed by NEKUSE
          include 'NEKUSE_DEF'
          include 'NEKUSE' ! ff[xyz]
+         include 'INPUT_DEF'
+         include 'INPUT' ! IFPERT
 
          integer, intent(in) :: ix,iy,iz,ieg
 
-         ffx = 0.0
-         ffy = 0.0
-         ffz = 0.0
+         if (ifpert) then
+            ! perturbation mode
+            ! adjoint problem
+            ! (time goes backward)
+            ffx = 0.0
+            ffy = 0.0
+            ffz = 0.0
+         else
+            ! non-linear mode
+            ! direct problem
+            ! (time goes forward)
+            ffx = 0.0
+            ffy = 0.0
+            ffz = 1.0
+         endif
 
       return
       end
@@ -105,31 +119,12 @@ c-----------------------------------------------------------------------
          include 'SIZE'  ! LDIMT needed by NEKUSE
          include 'NEKUSE_DEF'
          include 'NEKUSE' ! u[xyz], [xyz]
-         include 'INPUT_DEF'
-         include 'INPUT' ! IFPERT
 
          integer, intent(in) :: ix,iy,iz,iside,ieg
 
-         if (ifpert) then
-            ! perturbation mode
-            ! adjoint problem
-            ! (time goes backward)
-            ux =  0.0
-            uy =  0.0
-            uz =  0.0
-         else
-            ! non-linear mode
-            ! direct problem
-            ! (time goes forward)
-            ux =  0.0
-            uy =  0.0
-            uz =  0.0
-            if (y .lt. 0) then
-               ux = -1.0
-            else
-               ux =  1.0
-            endif
-         endif
+         ux =  0.0
+         uy =  0.0
+         uz =  0.0
 
       return
       end
@@ -150,6 +145,11 @@ c-----------------------------------------------------------------------
 
          integer, intent(in) :: ix,iy,iz,ieg
 
+         if (usr_debug.gt.0) then
+            if (ieg.eq.1 .and. ix.eq.1 .and. iy.eq.1 .and. iz.eq.1) then
+               write(*,*) 'init_amp = ', init_amp
+            endif
+         endif
          ux = init_amp*rnd_loc(-1.0, 1.0)
          uy = init_amp*rnd_loc(-1.0, 1.0)
          uz = init_amp*rnd_loc(-1.0, 1.0)

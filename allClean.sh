@@ -1,14 +1,16 @@
-rm -rf compiler.out \
-	    couette.f \
-		 couette.map \
-		 couette.re2 \
-		 couette.rea \
-		 inicouette0.* \
-		 adjcouette0.* \
-		 divcouette0.* \
-		 stfcouette0.* \
+rm -rf base* \
+	    compiler.out \
+	    pipe.f \
+		 pipe.map \
+		 pipe.re2 \
+		 pipe.rea \
+		 pipe0.* \
+		 inipipe0.* \
+		 adjpipe0.* \
+		 divpipe0.* \
+		 stfpipe0.* \
 		 SESSION.NAME \
-		 couette.sch \
+		 pipe.sch \
 		 log* \
 	    field* \
 		 makefile \

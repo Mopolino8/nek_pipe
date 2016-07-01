@@ -1,8 +1,6 @@
 &USERPAR
- upar_dummy = 0 ! I hate these lists
- usr_debug = 1 ! debug flag [1/0]
- /
-&OPTPERT
+ upar_dummy = 0  ! I hate these lists
+ usr_debug = 1   ! debug flag [1/0]
  init_amp = 0.01 ! amplitude of random initial condition
  rvlv_info = 1   ! print revolve algorithm information [1/0]
  rvlv_snaps = 50 ! upper bound on number of checkpoints

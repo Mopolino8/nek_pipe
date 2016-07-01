@@ -128,8 +128,8 @@
       integer ierr
 
 !     namelists; cannot be empty
-      namelist /USERPAR/ upar_dummy, usr_debug
-      namelist /OPTPERT/ init_amp, rvlv_info, rvlv_snaps
+      namelist /USERPAR/ upar_dummy, usr_debug,
+     $                   init_amp, rvlv_info, rvlv_snaps
 
 !-----------------------------------------------------------------------
 !     default values
@@ -179,8 +179,8 @@
       integer ierr
 
 !     namelists; cannot be empty
-      namelist /USERPAR/ upar_dummy, usr_debug
-      namelist /OPTPERT/ init_amp, rvlv_info, rvlv_snaps
+      namelist /USERPAR/ upar_dummy, usr_debug,
+     $                   init_amp, rvlv_info, rvlv_snaps
 !-----------------------------------------------------------------------
       ierr=0
       if (NID.eq.0) then

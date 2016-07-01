@@ -1,7 +1,7 @@
-# nek_couette
+# nek_pipe
 [jcanton](mailto:jcanton@mech.kth.se)
 
-This is a simple Couette flow setup for nek5000.
+This is a simple Poiseuille flow setup for nek5000.
 The objective is to use it to test the non-linear adjoint algorithm developed by Oana Marin and Michel Schanen.
 
 ## Checkpointing

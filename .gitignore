@@ -6,20 +6,20 @@
 
 makefile
 compiler.out
-couette.f
-couette.map
-couette.re2
-couette.rea
-couette.sch
+pipe.f
+pipe.map
+pipe.re2
+pipe.rea
+pipe.sch
 obj/
 nek5000
 
 SESSION.NAME
 log*
 
-couette0.*
-inicouette*
-adjcouette0.*
-divcouette0.*
-stfcouette0.*
+pipe0.*
+inipipe*
+adjpipe0.*
+divpipe0.*
+stfpipe0.*
 field*
