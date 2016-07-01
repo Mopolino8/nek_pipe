@@ -78,6 +78,7 @@ c-----------------------------------------------------------------------
       subroutine userchk
 
          use nonlinadj ! fwd_bkw_rvlv()
+         use misc_stuff ! kinetic_energy()
 
          implicit none
 
@@ -89,15 +90,24 @@ c-----------------------------------------------------------------------
          include 'INPUT'
          include 'SOLN_DEF' ! v[xyz], pr
          include 'SOLN'
+         include 'MASS_DEF' ! bm1
+         include 'MASS'
          include 'USERPAR' ! usr_debug, rvlv_info, rvlv_snaps
 
+         integer :: n
+         real    :: ek
+         real, dimension(:), allocatable :: tmp
+         real, external :: glsum ! math.f
 
          if (usr_debug.gt.0) then
             ! Output initial condition
             if (istep.eq.0) then
                call outpost(vx,vy,vz,pr,t,'ini')
+               ek = kinetic_energy(vx, vy, vz)
+               if (nid.eq.0) write(*,*) 'Ek = ', ek
             endif
          endif
+         call exitt()
 
          ! call forward-backward iteration with revolve
          if (usr_debug.gt.0) then
@@ -133,7 +143,7 @@ c-----------------------------------------------------------------------
 
       subroutine useric (ix,iy,iz,ieg)
 
-         use randgen ! rnd_loc()
+         use randgen    ! rnd_loc()
 
          implicit none
 
@@ -150,9 +160,11 @@ c-----------------------------------------------------------------------
                write(*,*) 'nlopt_e0 = ', nlopt_e0
             endif
          endif
-         ux = nlopt_e0*rnd_loc(-1.0, 1.0)
-         uy = nlopt_e0*rnd_loc(-1.0, 1.0)
-         uz = nlopt_e0*rnd_loc(-1.0, 1.0)
+
+         ux = rnd_loc(-1.0, 1.0)
+         uy = rnd_loc(-1.0, 1.0)
+         uz = rnd_loc(-1.0, 1.0)
+
 
       return
       end
