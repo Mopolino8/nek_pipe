@@ -2,6 +2,9 @@
       integer :: upar_dummy, usr_debug
       !
       real    :: nlopt_e0
+      !
+      real    :: stasc_eps, stasc_res
+      !
       integer :: rvlv_info, rvlv_snaps
 
 !     common blocks
