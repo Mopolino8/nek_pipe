@@ -45,14 +45,14 @@ USR="chkpoint.o IO_tools.o uparam.o randgen.o misc_stuff.o nonlinadj.o"
 USR_LFLAGS="-L./src_usr/revolve -lrevolve -lstdc++" #-ladjstack
 
 # generic compiler flags
-G="-g -I./src_nek/ -I./src_usr/"
+G="-I./src_nek/ -I./src_usr/"
 #G="-I./src_nek/ -I./src_usr/ -g -Wall -Wextra -Warray-temporaries -Wconversion -fbacktrace -ffree-line-length-0 -fcheck=all -ffpe-trap=zero,overflow,underflow -finit-real=nan"
 #G="-I./src_nek/ -I./src_usr/ -ggdb -fsanitize=address -fno-omit-frame-pointer"
 #valgrind -ggdb -Wunused
 
 # optimization flags
-OPT_FLAGS_STD="-O0"
-OPT_FLAGS_MAG="-O0"
+OPT_FLAGS_STD="-O3"
+OPT_FLAGS_MAG="-O3"
 
 # enable AMG coarse grid solver (default XXT)
 #IFAMG="true"
