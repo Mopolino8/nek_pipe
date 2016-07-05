@@ -8,6 +8,6 @@
  rvlv_snaps = 50   ! upper bound on number of checkpoints in revolve
  /
 &CHKPOINT ! not in use for now
- CHKPTSTEP=50,
- IFCHKPTRST=T,
+ CHKPTSTEP=50
+ IFCHKPTRST=T
  /
