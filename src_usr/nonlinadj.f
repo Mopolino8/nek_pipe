@@ -24,6 +24,13 @@
 
       implicit none
 
+      ! was used when trying to pass fields between usrdat3 and useric
+      !! include 'SIZE_DEF'
+      !! include 'SIZE'
+      !! real :: vx_nladj(lx1, ly1, lz1, lelv)
+      !! real :: vy_nladj(lx1, ly1, lz1, lelv)
+      !! real :: vz_nladj(lx1, ly1, lz1, lelv)
+
       ! Interface to the functions in the revolve library
       !
       interface
