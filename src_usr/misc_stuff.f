@@ -19,19 +19,19 @@
          include 'MASS'
 
          real, intent(in) :: u(1), v(1), w(1)
-         integer :: n
+         integer :: nn
          real, dimension(:), allocatable :: tmp
          real, external :: glsum ! math.f
 
-         n = nx1*ny1*nz1*nelv
+         nn = nx1*ny1*nz1*nelv
 
-         allocate( tmp(n) )
+         allocate( tmp(nn) )
 
-         call rzero(tmp, n)
-         call vdot3(tmp, u,v,w, u,v,w, n)
-         call col2(tmp, bm1, n)
+         call rzero(tmp, nn)
+         call vdot3(tmp, u,v,w, u,v,w, nn)
+         call col2(tmp, bm1, nn)
 
-         kinetic_energy = 0.5*glsum(tmp, n)
+         kinetic_energy = 0.5*glsum(tmp, nn)
 
          deallocate( tmp )
 
