@@ -82,8 +82,8 @@ c-----------------------------------------------------------------------
 
          implicit none
 
-         !include 'SIZE_DEF' ! already included in module nonlinadj
-         !include 'SIZE'
+         include 'SIZE_DEF'
+         include 'SIZE'
          include 'TSTEP_DEF' ! ISTEP
          include 'TSTEP'
          include 'INPUT_DEF' ! param()
@@ -94,13 +94,12 @@ c-----------------------------------------------------------------------
          include 'MASS'
          include 'USERPAR' ! usr_debug, rvlv_info, rvlv_snaps
 
-         integer :: nn
          real    :: ek, ek_scale
          real, dimension(:), allocatable :: tmp
          real, external :: glmax, glmin, glsum ! math.f
 
-         nn = nx1*ny1*nz1*nelv
-
+         ! rescale random initial condition field
+         ! to set the kinetic energy to Ek_0
          if (istep.eq.0) then
             ! measure kinetic energy
             ek = kinetic_energy(vx, vy, vz)
@@ -110,18 +109,16 @@ c-----------------------------------------------------------------------
             vx = ek_scale*vx
             vy = ek_scale*vy
             vz = ek_scale*vz
-         endif
-
-
-         if (usr_debug.gt.0) then
-            ! Output initial condition
-            if (istep.eq.0) then
+            !
+            if (usr_debug.gt.0) then
+               ! Output initial condition
                call outpost(vx,vy,vz,pr,t,'ini')
                ek = kinetic_energy(vx, vy, vz)
                if (nid.eq.0) write(*,*) 'nlopt_Ek = ', nlopt_e0
                if (nid.eq.0) write(*,*) 'Ek       = ', ek
             endif
          endif
+
          call exitt()
 
          ! call forward-backward iteration with revolve
@@ -141,7 +138,7 @@ c-----------------------------------------------------------------------
          implicit none
 
          include 'SIZE_DEF'
-         include 'SIZE'  ! LDIMT needed by NEKUSE
+         include 'SIZE' ! LDIMT needed by NEKUSE
          include 'NEKUSE_DEF'
          include 'NEKUSE' ! u[xyz], [xyz]
 
@@ -158,34 +155,22 @@ c-----------------------------------------------------------------------
 
       subroutine useric (ix,iy,iz,ieg)
 
-         !use nonlinadj ! v[xyz]_nladj
-
          implicit none
 
          include 'SIZE_DEF'
          include 'SIZE'  ! LDIMT needed by NEKUSE
-         !include 'PARALLEL_DEF'
-         !include 'PARALLEL' ! gllel
          include 'NEKUSE_DEF'
          include 'NEKUSE' ! u[xyz], [xyz]
 
          integer, intent(in) :: ix,iy,iz,ieg
-         !integer :: iel
 
-         !iel = gllel(ieg)
-         ! Copy the random velocity field with given kinetic
-         ! energy generated in usrdat3
-         !
-         !ux = vx_nladj(ix,iy,iz,iel)
-         !uy = vy_nladj(ix,iy,iz,iel)
-         !uz = vz_nladj(ix,iy,iz,iel)
-         !ux = rand()
-         !uy = rand()
-         !uz = rand()
+         ! initialize to random number,
+         ! uniformly distributed between 0 and 1
          call random_number(ux)
          call random_number(uy)
          call random_number(uz)
 
+         ! rescale to have uniform distribution between -1 and 1
          ux = (ux - 0.5)*2
          uy = (uy - 0.5)*2
          uz = (uz - 0.5)*2
@@ -225,58 +210,12 @@ c-----------------------------------------------------------------------
 
       subroutine usrdat3
 
-         use randgen    ! init_random_seed()
-         !use misc_stuff ! kinetic_energy()
-         !use nonlinadj ! v[xyz]_nladj
+         use randgen ! init_random_seed()
 
          implicit none
 
-         !! !include 'SIZE_DEF' ! already included in module nonlinadj
-         !! !include 'SIZE'
-         !! include 'SOLN_DEF' ! pr ! TODO TEMPORARY
-         !! include 'SOLN'
-         !! include 'USERPAR' ! nlopt_e0
-
-         !! integer :: ii, nn
-         !! real :: ek, ek_scale
-         !! double precision, external :: dnekclock ! defined in comm_mpi.f
-         !! double precision, external :: glmax, glsum ! math.f
-
          ! initialise random number generator
          call init_random_seed()
-
-         !! nn = nx1*ny1*nz1*nelv
-         !! call rzero(vx_nladj, nn)
-         !! call rzero(vy_nladj, nn)
-         !! call rzero(vz_nladj, nn)
-
-         !! ! generate random velocity field
-         !! do ii = 1, nn
-         !!    !call random_number(vx_nladj(ii, 1, 1, 1))
-         !!    !call random_number(vy_nladj(ii, 1, 1, 1))
-         !!    !call random_number(vz_nladj(ii, 1, 1, 1))
-         !!    !vx_nladj(ii, 1, 1, 1) = 1.47629478356298374592873582734e-15 !dble(1.0/ii)
-         !!    !vy_nladj(ii, 1, 1, 1) = 1.32498759283572634598762349863 !dble(1.0/ii)
-         !!    !vz_nladj(ii, 1, 1, 1) = 1.0 !dble(1.0/ii)
-         !!    vx_nladj(ii, 1, 1, 1) = 0.01*rand()
-         !!    vy_nladj(ii, 1, 1, 1) = 0.01*rand()
-         !!    vz_nladj(ii, 1, 1, 1) = 0.01*rand()
-         !! enddo
-         !! ! measure kinetic energy
-         !! ek = kinetic_energy(vx_nladj, vy_nladj, vz_nladj)
-         !! ! rescale field to have ek = nlopt_e0
-         !! !ek_scale = sqrt(nlopt_e0/ek)
-         !! !!
-         !! !vx_nladj = ek_scale*vx_nladj
-         !! !vy_nladj = ek_scale*vy_nladj
-         !! !vz_nladj = ek_scale*vz_nladj
-
-         !! if (usr_debug.gt.0) then
-         !!    if (nid.eq.0) write(*,*) 'nlopt_Ek = ', nlopt_e0
-         !!    if (nid.eq.0) write(*,*) 'Ek_0  = ', ek
-         !!    if (nid.eq.0) write(*,*) 'glsum = ', glsum(abs(vx_nladj),nn)
-         !!    call outpost(vx_nladj,vy_nladj,vz_nladj,pr,t,'in0')
-         !! endif
 
       return
       end
