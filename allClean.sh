@@ -8,6 +8,7 @@ rm -rf base* \
 		 pipe.sch \
 		 log* \
 		 *0.f????? \
+		 *.nek5000 \
 	    field* \
 		 makefile \
 		 nek5000 \

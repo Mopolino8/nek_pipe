@@ -18,4 +18,5 @@ SESSION.NAME
 log*
 
 *0.f?????
+*.nek5000
 field*
