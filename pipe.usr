@@ -68,7 +68,7 @@ c-----------------------------------------------------------------------
          integer, intent(in) :: ix,iy,iz,ieg
 
          QVOL = 0.0
-         ! SOURCE = 0.0 (cannot find where this is)
+         ! SOURCE = 0.0 (cannot find where this is defined)
 
       return
       end
@@ -94,21 +94,24 @@ c-----------------------------------------------------------------------
          include 'MASS'
          include 'USERPAR' ! usr_debug, rvlv_info, rvlv_snaps
 
-         real    :: ek, ek_scale
-         real, dimension(:), allocatable :: tmp
-         real, external :: glmax, glmin, glsum ! math.f
+         integer :: nn
+         real :: ek, ek_scale
+         !real, external :: glmax, glmin, glsum ! math.f
 
-         ! rescale random initial condition field
+         nn = nx1*ny1*nz1*nelv
+
+         ! Rescale random initial condition field
          ! to set the kinetic energy to Ek_0
+         !
          if (istep.eq.0) then
             ! measure kinetic energy
             ek = kinetic_energy(vx, vy, vz)
             ! rescale field to have ek = nlopt_e0
             ek_scale = sqrt(nlopt_e0/ek)
-            !
-            vx = ek_scale*vx
-            vy = ek_scale*vy
-            vz = ek_scale*vz
+            ! v[xyz] = ek_scale*v[xyz]
+            call cmult(vx, ek_scale, nn)
+            call cmult(vy, ek_scale, nn)
+            call cmult(vz, ek_scale, nn)
             !
             if (usr_debug.gt.0) then
                ! Output initial condition

@@ -75,7 +75,7 @@
          logical :: first
          !
          real :: cfl
-         integer :: n
+         integer :: nn
          real, allocatable :: chkp(:,:,:,:)
 
 
@@ -132,9 +132,9 @@
 
          ! Allocate checkpointing arrays
          !
-         n = nx1*ny1*nz1*nelv
+         nn = nx1*ny1*nz1*nelv
          !
-         allocate(chkp(n,3,snaps,nbdinp))
+         allocate(chkp(nn,3,snaps,nbdinp))
 
 
          ! Initialise the algorithm
@@ -150,15 +150,15 @@
                if (info.gt.0) then
                   write(*,*) 'Store in checkpoint number ',check, '.'
                endif
-               call copy(chkp(:,1,check+1,1),vxlag(1,1,1,1,1),n)
-               call copy(chkp(:,2,check+1,1),vylag(1,1,1,1,1),n)
-               call copy(chkp(:,3,check+1,1),vzlag(1,1,1,1,1),n)
-               call copy(chkp(:,1,check+1,2),vxlag(1,1,1,1,2),n)
-               call copy(chkp(:,2,check+1,2),vylag(1,1,1,1,2),n)
-               call copy(chkp(:,3,check+1,2),vzlag(1,1,1,1,2),n)
-               call copy(chkp(:,1,check+1,3),vx,n)
-               call copy(chkp(:,2,check+1,3),vy,n)
-               call copy(chkp(:,3,check+1,3),vz,n)
+               call copy(chkp(:,1,check+1,1), vxlag(1,1,1,1,1), nn)
+               call copy(chkp(:,2,check+1,1), vylag(1,1,1,1,1), nn)
+               call copy(chkp(:,3,check+1,1), vzlag(1,1,1,1,1), nn)
+               call copy(chkp(:,1,check+1,2), vxlag(1,1,1,1,2), nn)
+               call copy(chkp(:,2,check+1,2), vylag(1,1,1,1,2), nn)
+               call copy(chkp(:,3,check+1,2), vzlag(1,1,1,1,2), nn)
+               call copy(chkp(:,1,check+1,3), vx,               nn)
+               call copy(chkp(:,2,check+1,3), vy,               nn)
+               call copy(chkp(:,3,check+1,3), vz,               nn)
             case default
                if(nid.eq.0) write(*,*) 'Error!'
          end select
@@ -182,7 +182,7 @@
      $                                     ' to ', capo, '.'
                endif
 
-               time = oldcapo*DT
+               time   = oldcapo*DT
                ifpert = .false.
                ifadj  = .false.
                !count  = 0 ! TODO not used?
@@ -205,15 +205,15 @@
                   if (nid.eq.0) write(*,*) 'Store in checkpoint number',
      $                                     check, '.'
                endif
-               call copy(chkp(:,1,check+1,1),vxlag(1,1,1,1,1),n)
-               call copy(chkp(:,2,check+1,1),vylag(1,1,1,1,1),n)
-               call copy(chkp(:,3,check+1,1),vzlag(1,1,1,1,1),n)
-               call copy(chkp(:,1,check+1,2),vxlag(1,1,1,1,2),n)
-               call copy(chkp(:,2,check+1,2),vylag(1,1,1,1,2),n)
-               call copy(chkp(:,3,check+1,2),vzlag(1,1,1,1,2),n)
-               call copy(chkp(:,1,check+1,3),vx,n)
-               call copy(chkp(:,2,check+1,3),vy,n)
-               call copy(chkp(:,3,check+1,3),vz,n)
+               call copy(chkp(:,1,check+1,1), vxlag(1,1,1,1,1), nn)
+               call copy(chkp(:,2,check+1,1), vylag(1,1,1,1,1), nn)
+               call copy(chkp(:,3,check+1,1), vzlag(1,1,1,1,1), nn)
+               call copy(chkp(:,1,check+1,2), vxlag(1,1,1,1,2), nn)
+               call copy(chkp(:,2,check+1,2), vylag(1,1,1,1,2), nn)
+               call copy(chkp(:,3,check+1,2), vzlag(1,1,1,1,2), nn)
+               call copy(chkp(:,1,check+1,3), vx,               nn)
+               call copy(chkp(:,2,check+1,3), vy,               nn)
+               call copy(chkp(:,3,check+1,3), vz,               nn)
                !
                ! TODO useless?
                !if(firstvx.eqv..true.) then
@@ -230,11 +230,16 @@
      $                                     ' perform first reverse step'
                endif
 
-               if(first.eqv..true.) then 
-                  call copy(vxp,vx,n)
-                  call copy(vyp,vy,n)
-                  call copy(vzp,vz,n)
+               if(first.eqv..true.) then
                   first=.false.
+                  ! v[xyz]p = v[xyz]
+                  call copy(vxp, vx, nn)
+                  call copy(vyp, vy, nn)
+                  call copy(vzp, vz, nn)
+                  ! TODO change sign? see eq.(33) in Kerswell et al. 2014
+                  !call chsign(vxp, nn)
+                  !call chsign(vyp, nn)
+                  !call chsign(vzp, nn)
                end if
                if (usr_debug.gt.0) then
                   call outpost(vx,vy,vz,pr,t,'lst')
@@ -324,15 +329,15 @@
                   if (nid.eq.0) write(*,*) 'Restore from checkpoint',
      $                                     ' number ', check
                endif
-               call copy(vxlag(1,1,1,1,1),chkp(:,1,check+1,1),n)
-               call copy(vylag(1,1,1,1,1),chkp(:,2,check+1,1),n)
-               call copy(vzlag(1,1,1,1,1),chkp(:,3,check+1,1),n)
-               call copy(vxlag(1,1,1,1,2),chkp(:,1,check+1,2),n)
-               call copy(vylag(1,1,1,1,2),chkp(:,2,check+1,2),n)
-               call copy(vzlag(1,1,1,1,2),chkp(:,3,check+1,2),n)
-               call copy(vx,chkp(:,1,check+1,3),n)
-               call copy(vy,chkp(:,2,check+1,3),n)
-               call copy(vz,chkp(:,3,check+1,3),n)
+               call copy(vxlag(1,1,1,1,1), chkp(:,1,check+1,1), nn)
+               call copy(vylag(1,1,1,1,1), chkp(:,2,check+1,1), nn)
+               call copy(vzlag(1,1,1,1,1), chkp(:,3,check+1,1), nn)
+               call copy(vxlag(1,1,1,1,2), chkp(:,1,check+1,2), nn)
+               call copy(vylag(1,1,1,1,2), chkp(:,2,check+1,2), nn)
+               call copy(vzlag(1,1,1,1,2), chkp(:,3,check+1,2), nn)
+               call copy(vx,               chkp(:,1,check+1,3), nn)
+               call copy(vy,               chkp(:,2,check+1,3), nn)
+               call copy(vz,               chkp(:,3,check+1,3), nn)
 
             case(6)
                !
