@@ -17,9 +17,5 @@ nek5000
 SESSION.NAME
 log*
 
-pipe0.*
-inipipe*
-adjpipe0.*
-divpipe0.*
-stfpipe0.*
+*0.f?????
 field*

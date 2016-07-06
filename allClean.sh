@@ -4,14 +4,10 @@ rm -rf base* \
 		 pipe.map \
 		 pipe.re2 \
 		 pipe.rea \
-		 pipe0.* \
-		 inipipe0.* \
-		 adjpipe0.* \
-		 divpipe0.* \
-		 stfpipe0.* \
 		 SESSION.NAME \
 		 pipe.sch \
 		 log* \
+		 *0.f????? \
 	    field* \
 		 makefile \
 		 nek5000 \
