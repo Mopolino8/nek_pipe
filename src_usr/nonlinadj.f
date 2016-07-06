@@ -1,7 +1,6 @@
       MODULE nonlinadj
       !
       ! Module for non-linear adjoint iterations.
-      !
       ! jcanton@mech.kth.se
 
       ! TODO
@@ -21,18 +20,249 @@
       CONTAINS
 
 !==============================================================================
+!     MAIN ROUTINE
+!==============================================================================
+
+      subroutine compute_nlopt(update_alg, fwd_bkw_alg)
+         !
+         ! Main routine for the computation of non-linear optimal perturbations
+         ! jcanton@mech.kth.se
+         !
+         ! PREREQUISITES:
+         ! - we suppose that an initial velocity field with given kinetic
+         !   energy has been stored in v[xyz]
+         !
+         implicit none
+
+         include 'SIZE_DEF'
+         include 'SIZE' ! nid
+         include 'INPUT_DEF' ! param()
+         include 'INPUT'         
+         include 'SOLN_DEF' ! v[xyz]
+         include 'SOLN'         
+         include 'USERPAR' ! usr_debug, nlopt_res, nlopt_maxit
+
+         integer, intent(in) :: update_alg, fwd_bkw_alg
+         integer :: nn
+         integer :: it_0, it_end
+         real    :: tol
+         integer :: ite, maxit
+
+         real :: res
+         !real, dimension(nlopt_maxit) :: res
+
+         real :: udx(lx1, ly1, lz1, lelv), ! direct velocity field
+     $           udy(lx1, ly1, lz1, lelv),
+     $           udz(lx1, ly1, lz1, lelv)
+         real :: uax(lx1, ly1, lz1, lelv), ! adjoint velocity field
+     $           uay(lx1, ly1, lz1, lelv),
+     $           uaz(lx1, ly1, lz1, lelv)
+
+
+         !---------------------------------------------------------------------
+         ! Initialise stuff
+         !
+         nn    = nx1*ny1*nz1*nelv
+         tol   = nlopt_res
+         maxit = nlopt_maxit
+         !
+         it_0   = 0
+         it_end = param(11)
+         if (usr_debug.gt.0) then
+            if (nid.eq.0) write(*,*) 'nsteps = ', it_end
+         endif
+         !
+         ! save initial condition in ud[xyz]
+         call copy(udx, vx, nn)
+         call copy(udy, vy, nn)
+         call copy(udz, vz, nn)
+
+         !---------------------------------------------------------------------
+         ! Call forward-backward iterations
+         !
+         ite = 1
+         !res(1) = 1e3
+         res = 1e3
+
+         !do while (res(ite) .ge. tol .and. ite .le. maxit)
+         do while (res .ge. tol .and. ite .le. maxit)
+            !
+            ! integrate forward and backward
+            call nladj_fwd_bkw(it_0, it_end, rvlv_snaps, fwd_bkw_alg)
+            !
+            ! copy 'initial' adjoint field resulting from fwd_bkw iterations
+            call copy(uax, vxp, nn)
+            call copy(uay, vyp, nn)
+            call copy(uaz, vzp, nn)
+            !
+            ! update iterate
+            call nlopt_update(res,
+     $                        udx,udy,udz, uax,uay,uaz,
+     $                        update_alg)
+            !
+            ! copy updated field back
+            call copy(vx, udx, nn)
+            call copy(vy, udy, nn)
+            call copy(vz, udz, nn)
+            !
+            if (usr_debug.gt.0) then
+               call outpost(vx,vy,vz,pr,t,'opt')
+            endif
+            !
+            if (usr_debug.gt.0) then
+               if (nid.eq.0) then
+                  !write(*,*) 'ite ', ite, ' res = ', res(ite)
+                  write(*,*) 'ite ', ite, ' res = ', res
+               endif
+            endif
+            !
+            ite = ite + 1
+            !
+         enddo
+
+
+      end subroutine compute_nlopt
+
+!==============================================================================
 !     UPDATE ROUTINES
 !==============================================================================
+
+      subroutine nlopt_update(res, udx,udy,udz, uax,uay,uaz, alg)
+         !
+         ! Update the iterate ud[xyz](n) towards a maximum of the lagrangian
+         ! cost function.
+         ! This routine is a wrapper for different update algorithms.
+         ! jcanton@mech.kth.se
+         !
+         implicit none
+
+         include 'SIZE_DEF'
+         include 'SIZE' ! nid
+         include 'USERPAR' ! usr_debug, nlopt_res
+
+         real :: res
+         real :: udx(1), udy(1), udz(1)
+         real :: uax(1), uay(1), uaz(1)
+         integer, intent(in) :: alg
+
+         ! update iterate
+         !
+         select case(alg)
+
+            case(1)
+               !
+               ! STEEPEST ASCENT
+               if (usr_debug.gt.0 .and. nid.eq.0) then
+                  write(*,*) 'calling steepest ascent update' 	
+               endif
+               call nlopt_stpst_ascnt(res, udx,udy,udz, uax,uay,uaz)
+
+            case default
+               if(nid.eq.0) then
+                  write(*,*) '*** ERROR ***'
+                  write(*,*) 'Unknown "alg" in nlopt_update'
+                  write(*,*) '*** ERROR ***'
+               endif
+               call exitt()
+
+         end select
+
+      end subroutine nlopt_update
+
+!------------------------------------------------------------------------------
+
+      subroutine nlopt_stpst_ascnt(res, udx,udy,udz, uax,uay,uaz)
+         !
+         ! Update the iterate ud[xyz](n) towards the maximum of kinetic energy
+         ! using the steepest ascent algorithm.
+         ! jcanton@mech.kth.se
+         !
+         use misc_stuff ! kinetic_energy(), kinetic_energy_2()
+
+         implicit none
+
+         include 'SIZE_DEF' ! nx1, ny1, nz1, nelv
+         include 'SIZE' ! nid
+         include 'USERPAR' ! usr_debug, nlopt_e0, stasc_eps
+
+         real    :: res
+         real    :: udx(1), udy(1), udz(1) ! direct  velocity field
+         real    :: uax(1), uay(1), uaz(1) ! adjoint velocity field
+         real    :: eps, lambda_1, lambda_2, lambda
+         integer :: nn
+         real    :: ek0, ek_d, ek_a, ek_da
+         real    :: aa, bb, cc
+         real    :: tmpx(lx1, ly1, lz1, lelv),
+     $              tmpy(lx1, ly1, lz1, lelv),
+     $              tmpz(lx1, ly1, lz1, lelv)
+
+         !---------------------------------------------------------------------
+         ! Initialise stuff
+         !
+         nn  = nx1*ny1*nz1*nelv
+         ek0 = nlopt_e0
+         eps = stasc_eps
+
+         !---------------------------------------------------------------------
+         ! Compute lambda
+         !
+         ek_d  = kinetic_energy(udx, udy, udz)
+         ek_a  = kinetic_energy(uax, uay, uaz)
+         ek_da = kinetic_energy_2(udx,udy,udz, uax,uay,uaz)
+         !
+         aa = eps**2*ek_d
+         bb = 2*eps*(ek_d - eps*ek_da)
+         cc = ek_d + eps**2*ek_a - 2*eps*ek_da - ek0
+         !
+         lambda_1 = (-bb + sqrt(bb**2 - 4*aa*cc))/(2*aa)
+         lambda_2 = (-bb - sqrt(bb**2 - 4*aa*cc))/(2*aa)
+         lambda   = lambda_1 ! TODO works with lambda_2 as well (?!?)
+         if (usr_debug.gt.0) then
+            if (nid.eq.0) write(*,*) 'lambda = ', lambda
+         endif
+
+         !---------------------------------------------------------------------
+         ! Update velocity field
+         ! u(n+1) = u(n) + eps*(lambda*u(n) - v(n))
+         ! res    =             lambda*u(n) - v(n)
+         !
+         call copy(tmpx, udx, nn)
+         call copy(tmpy, udy, nn)
+         call copy(tmpz, udz, nn)
+         !
+         call cmult(tmpx, lambda, nn)
+         call cmult(tmpy, lambda, nn)
+         call cmult(tmpz, lambda, nn)
+         !
+         call sub2(tmpx, uax, nn)
+         call sub2(tmpy, uay, nn)
+         call sub2(tmpz, uaz, nn)
+         !
+         res = 2*kinetic_energy(tmpx,tmpy,tmpz)
+         !
+         call cmult(tmpx, eps, nn)
+         call cmult(tmpy, eps, nn)
+         call cmult(tmpz, eps, nn)
+         !
+         call add2(udx, tmpx, nn)
+         call add2(udy, tmpy, nn)
+         call add2(udz, tmpz, nn)
+
+      end subroutine nlopt_stpst_ascnt
+
 
 !==============================================================================
 !     INTEGRATION ROUTINES
 !==============================================================================
 
-      subroutine nladj_fwd_bkw(it_0, it_end, snaps, info, alg)
+      subroutine nladj_fwd_bkw(it_0, it_end, snaps, alg)
          !
          ! Integrate the non-linear direct problem forward in time and the
          ! non-linear adjoint problem backward.
+         ! The initial condition must be stored in v[xyz] and the resulting
+         ! adjoint velocity field at time = 0 will be stored in v[xyz]p.
          ! This routine is a wrapper for different integration algorithms.
+         ! jcanton@mech.kth.se
          !
          implicit none
 
@@ -40,7 +270,7 @@
          include 'SIZE' ! NID
          include 'USERPAR' ! usr_debug
 
-         integer, intent(in) :: it_0, it_end, snaps, info, alg
+         integer, intent(in) :: it_0, it_end, snaps, alg
 
          select case(alg)
 
@@ -50,12 +280,12 @@
                if (usr_debug.gt.0 .and. nid.eq.0) then
                   write(*,*) 'calling revolve algorithm' 	
                endif
-               call fwd_bkw_rvlv(it_0, it_end, snaps, info)
+               call fwd_bkw_rvlv(it_0, it_end, snaps)
 
             case default
                if(nid.eq.0) then
                   write(*,*) '*** ERROR ***'
-                  write(*,*) 'Unknown "alg" in nl_fwd_bkw'
+                  write(*,*) 'Unknown "alg" in nladj_fwd_bkw'
                   write(*,*) '*** ERROR ***'
                endif
                call exitt()
@@ -66,10 +296,11 @@
 
 !------------------------------------------------------------------------------
 
-      subroutine fwd_bkw_rvlv(capo_in, fine_in, snaps_in, info_in)
+      subroutine fwd_bkw_rvlv(capo_in, fine_in, snaps_in)
          !
          ! Integrate the direct problem forward in time and the non-linear
          ! adjoint problem backward using the 'revolve' algorithm.
+         ! jcanton@mech.kth.se
          !
          ! Currently includes the 'revolve' algorithm implemented by Oana Marin
          ! and Michel Schanen. Jacopo Canton re-organised everything in this
@@ -115,7 +346,7 @@
             !END FUNCTION adj_stack_empty 
          end interface
 
-         integer, intent(in) :: capo_in, fine_in, snaps_in, info_in
+         integer, intent(in) :: capo_in, fine_in, snaps_in
          integer :: capo, fine, snaps, info, whatodo, check, oldcapo
          logical :: first
          !
@@ -170,7 +401,7 @@
          ! If an error occurs the return value of 'info' contains information
          ! about the reason for the irregular termination of revolve.
          !
-         info = info_in
+         info = usr_debug
          !
          first = .true.
 

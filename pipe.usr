@@ -77,25 +77,23 @@ c-----------------------------------------------------------------------
 
       subroutine userchk
 
-         use nonlinadj ! fwd_bkw_rvlv()
+         use nonlinadj ! nladj_fwd_bkw(), nlopt_update()
          use misc_stuff ! kinetic_energy()
 
          implicit none
 
-         include 'SIZE_DEF'
+         include 'SIZE_DEF' ! nx1, ny1, nz1, nelv
          include 'SIZE'
          include 'TSTEP_DEF' ! ISTEP
          include 'TSTEP'
-         include 'INPUT_DEF' ! param()
-         include 'INPUT'
          include 'SOLN_DEF' ! v[xyz], pr
          include 'SOLN'
          include 'MASS_DEF' ! bm1
          include 'MASS'
-         include 'USERPAR' ! usr_debug, rvlv_info, rvlv_snaps
+         include 'USERPAR' ! usr_debug
 
          integer :: nn
-         real :: ek, ek_scale
+         real    :: ek, ek_scale
          !real, external :: glmax, glmin, glsum ! math.f
 
          !--------------------------------------------------------------
@@ -106,11 +104,12 @@ c-----------------------------------------------------------------------
          !--------------------------------------------------------------
          ! Rescale random initial condition field
          ! to set the kinetic energy to Ek_0
+         ! TODO add reading restart here
          !
          if (istep.eq.0) then
-            ! measure kinetic energy
+            ! Measure kinetic energy
             ek = kinetic_energy(vx, vy, vz)
-            ! rescale field to have ek = nlopt_e0
+            ! Rescale velocity field to have ek = nlopt_e0
             ek_scale = sqrt(nlopt_e0/ek)
             ! v[xyz] = ek_scale*v[xyz]
             call cmult(vx, ek_scale, nn)
@@ -127,12 +126,9 @@ c-----------------------------------------------------------------------
          endif
 
          !--------------------------------------------------------------
-         ! Call forward-backward iteration with revolve
+         ! Compute non-linear optimal
          !
-         if (usr_debug.gt.0) then
-            if (nid.eq.0) write(*,*) 'final time = ', param(11)
-         endif
-         call nladj_fwd_bkw(0, int(param(11)), rvlv_snaps, rvlv_info, 1)
+         call compute_nlopt(1, 1)
          call exitt()
 
       return
