@@ -12,7 +12,7 @@
 #
 10.    # Re
 1e-2   # DT
-100    # NSTEPS
+10     # NSTEPS
 10     # IOSTEP
 #
 5      # nPolynom = Polynomial degree, i.e. lx1-1 !!
