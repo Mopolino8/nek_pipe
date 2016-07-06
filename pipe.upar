@@ -1,10 +1,12 @@
 &USERPAR
- upar_dummy = 0    ! I hate these lists
- usr_debug  = 1    ! debug flag [1/0]
- nlopt_e0   = 0.01 ! initial energy
- nlopt_res  = 1e-3 ! residual on iterations
- stasc_eps  = 0.1  ! epsilon in steepest ascent update
- rvlv_snaps = 50   ! upper bound on number of checkpoints in revolve
+ upar_dummy  = 0    ! I hate these lists
+ usr_debug   = 1    ! debug flag [1/0]
+ nlopt_e0    = 0.01 ! initial energy
+ nlopt_res   = 1e-3 ! residual on iterations
+ nlopt_maxit = 10   ! maximum number of iterations
+ nlopt_dummy = 0    ! GODDAMMIT I HATE YOU ADAM
+ stasc_eps   = 0.9  ! epsilon in steepest ascent update
+ rvlv_snaps  = 50   ! upper bound on number of checkpoints in revolve
  /
 &CHKPOINT ! not in use for now
  CHKPTSTEP=50

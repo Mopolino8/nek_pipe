@@ -129,21 +129,23 @@
 
 !     namelists; cannot be empty
       namelist /USERPAR/ upar_dummy, usr_debug,
-     $                   nlopt_e0, nlopt_res,
+     $                   nlopt_e0, nlopt_res, nlopt_maxit, nlopt_dummy,
      $                   stasc_eps,
      $                   rvlv_snaps
 
 !-----------------------------------------------------------------------
 !     default values
-      upar_dummy = 1
-      usr_debug  = 1
+      upar_dummy  = 1
+      usr_debug   = 1
       !
-      nlopt_e0   = 1.0
-      nlopt_res  = 1e-3
+      nlopt_e0    = 1.0
+      nlopt_res   = 1e-3
+      nlopt_maxit = 50
+      nlopt_dummy = 1
       !
-      stasc_eps  = 0.1
+      stasc_eps   = 0.1
       !
-      rvlv_snaps = 1
+      rvlv_snaps  = 1
 
 !     read the file
       ierr=0
@@ -159,15 +161,17 @@
       call err_chk(ierr,'Error reading USERPAR parameters.$')
 
 !     broadcast data
-      call bcast(upar_dummy, WDSIZE)
-      call bcast(usr_debug,  WDSIZE)
+      call bcast(upar_dummy,  WDSIZE)
+      call bcast(usr_debug,   WDSIZE)
       !
-      call bcast(nlopt_e0,   WDSIZE)
-      call bcast(nlopt_res,  WDSIZE)
+      call bcast(nlopt_e0,    WDSIZE)
+      call bcast(nlopt_res,   WDSIZE)
+      call bcast(nlopt_maxit, WDSIZE)
+      call bcast(nlopt_dummy, WDSIZE)
       !
-      call bcast(stasc_eps,  WDSIZE)
+      call bcast(stasc_eps,   WDSIZE)
       !
-      call bcast(rvlv_snaps, WDSIZE)
+      call bcast(rvlv_snaps,  WDSIZE)
 
       return
       end
@@ -188,7 +192,7 @@
 
 !     namelists; cannot be empty
       namelist /USERPAR/ upar_dummy, usr_debug,
-     $                   nlopt_e0, nlopt_res,
+     $                   nlopt_e0, nlopt_res, nlopt_maxit, nlopt_dummy,
      $                   stasc_eps,
      $                   rvlv_snaps
 !-----------------------------------------------------------------------

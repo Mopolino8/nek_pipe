@@ -2,6 +2,7 @@
       integer :: upar_dummy, usr_debug
       !
       real    :: nlopt_e0, nlopt_res
+      integer :: nlopt_maxit, nlopt_dummy
       !
       real    :: stasc_eps
       !
@@ -9,6 +10,6 @@
 
 !     common blocks
       common /UPARAM/ upar_dummy, usr_debug,
-     $                nlopt_e0, nlopt_res,
+     $                nlopt_e0, nlopt_res, nlopt_maxit, nlopt_dummy,
      $                stasc_eps,
      $                rvlv_snaps
