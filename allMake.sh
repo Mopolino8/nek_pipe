@@ -1,11 +1,11 @@
 ../pipeMeshNek/pipeMeshNek
 
-reatore2 << EOF
+../nek5/bin/reatore2 << EOF
 base
 pipe
 EOF
 
-genmap << EOF
+../nek5/bin/genmap << EOF
 pipe
 0.05
 EOF
