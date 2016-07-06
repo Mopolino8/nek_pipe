@@ -129,8 +129,8 @@
 
 !     namelists; cannot be empty
       namelist /USERPAR/ upar_dummy, usr_debug,
-     $                   nlopt_e0,
-     $                   stasc_eps, stasc_res,
+     $                   nlopt_e0, nlopt_res,
+     $                   stasc_eps,
      $                   rvlv_info, rvlv_snaps
 
 !-----------------------------------------------------------------------
@@ -139,9 +139,9 @@
       usr_debug  = 1
       !
       nlopt_e0   = 1.0
+      nlopt_res  = 1e-3
       !
       stasc_eps  = 0.1
-      stasc_res  = 1e-3
       !
       rvlv_info  = 1
       rvlv_snaps = 1
@@ -164,9 +164,9 @@
       call bcast(usr_debug,  WDSIZE)
       !
       call bcast(nlopt_e0,   WDSIZE)
+      call bcast(nlopt_res,  WDSIZE)
       !
       call bcast(stasc_eps,  WDSIZE)
-      call bcast(stasc_res,  WDSIZE)
       !
       call bcast(rvlv_info,  WDSIZE)
       call bcast(rvlv_snaps, WDSIZE)
@@ -190,8 +190,8 @@
 
 !     namelists; cannot be empty
       namelist /USERPAR/ upar_dummy, usr_debug,
-     $                   nlopt_e0,
-     $                   stasc_eps, stasc_res,
+     $                   nlopt_e0, nlopt_res,
+     $                   stasc_eps,
      $                   rvlv_info, rvlv_snaps
 !-----------------------------------------------------------------------
       ierr=0

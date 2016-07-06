@@ -1,14 +1,14 @@
 !     include file to store user parameters
       integer :: upar_dummy, usr_debug
       !
-      real    :: nlopt_e0
+      real    :: nlopt_e0, nlopt_res
       !
-      real    :: stasc_eps, stasc_res
+      real    :: stasc_eps
       !
       integer :: rvlv_info, rvlv_snaps
 
 !     common blocks
       common /UPARAM/ upar_dummy, usr_debug,
-     $                nlopt_e0, 
-     $                stasc_eps, stasc_res,
+     $                nlopt_e0, nlopt_res,
+     $                stasc_eps,
      $                rvlv_info, rvlv_snaps
