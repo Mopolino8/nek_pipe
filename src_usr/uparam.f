@@ -131,7 +131,7 @@
       namelist /USERPAR/ upar_dummy, usr_debug,
      $                   nlopt_e0, nlopt_res,
      $                   stasc_eps,
-     $                   rvlv_info, rvlv_snaps
+     $                   rvlv_snaps
 
 !-----------------------------------------------------------------------
 !     default values
@@ -143,7 +143,6 @@
       !
       stasc_eps  = 0.1
       !
-      rvlv_info  = 1
       rvlv_snaps = 1
 
 !     read the file
@@ -168,7 +167,6 @@
       !
       call bcast(stasc_eps,  WDSIZE)
       !
-      call bcast(rvlv_info,  WDSIZE)
       call bcast(rvlv_snaps, WDSIZE)
 
       return
@@ -192,7 +190,7 @@
       namelist /USERPAR/ upar_dummy, usr_debug,
      $                   nlopt_e0, nlopt_res,
      $                   stasc_eps,
-     $                   rvlv_info, rvlv_snaps
+     $                   rvlv_snaps
 !-----------------------------------------------------------------------
       ierr=0
       if (NID.eq.0) then

@@ -4,7 +4,6 @@
  nlopt_e0   = 0.01 ! initial energy
  nlopt_res  = 1e-3 ! residual on iterations
  stasc_eps  = 0.1  ! epsilon in steepest ascent update
- rvlv_info  = 1    ! print revolve algorithm information [1/0]
  rvlv_snaps = 50   ! upper bound on number of checkpoints in revolve
  /
 &CHKPOINT ! not in use for now

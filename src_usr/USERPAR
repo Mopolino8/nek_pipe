@@ -5,10 +5,10 @@
       !
       real    :: stasc_eps
       !
-      integer :: rvlv_info, rvlv_snaps
+      integer :: rvlv_snaps
 
 !     common blocks
       common /UPARAM/ upar_dummy, usr_debug,
      $                nlopt_e0, nlopt_res,
      $                stasc_eps,
-     $                rvlv_info, rvlv_snaps
+     $                rvlv_snaps
