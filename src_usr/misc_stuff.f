@@ -9,16 +9,19 @@
       CONTAINS
 !==============================================================================
 
-      real function kinetic_energy(u, v, w)
-
+      real function kinetic_energy(vx, vy, vz)
+         !
+         ! Compute the kinetic energy of the v[xyz] velocity field
+         ! jcanton@mech.kth.se
+         !
          implicit none
 
-         include 'SIZE_DEF'
+         include 'SIZE_DEF' ! nx1, ny1, nz1, nelv
          include 'SIZE'
          include 'MASS_DEF' ! bm1
          include 'MASS'
 
-         real, intent(in) :: u(1), v(1), w(1)
+         real, intent(in) :: vx(1), vy(1), vz(1)
          integer :: nn
          real, dimension(:), allocatable :: tmp
          real, external :: glsum ! math.f
@@ -28,7 +31,7 @@
          allocate( tmp(nn) )
 
          call rzero(tmp, nn)
-         call vdot3(tmp, u,v,w, u,v,w, nn)
+         call vdot3(tmp, vx,vy,vz, vx,vy,vz, nn)
          call col2(tmp, bm1, nn)
 
          kinetic_energy = 0.5*glsum(tmp, nn)
