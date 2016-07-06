@@ -46,6 +46,7 @@ USR_LFLAGS="-L./src_usr/revolve -lrevolve -lstdc++" #-ladjstack
 
 # generic compiler flags
 G="-I./src_nek/ -I./src_usr/"
+#G="-I./src_nek/ -I./src_usr/ -fno-align-commons" # DAMMIT ADAM
 #G="-I./src_nek/ -I./src_usr/ -g -Wall -Wextra -Warray-temporaries -Wconversion -fbacktrace -ffree-line-length-0 -fcheck=all -ffpe-trap=zero,overflow,underflow -finit-real=nan"
 #G="-I./src_nek/ -I./src_usr/ -ggdb -fsanitize=address -fno-omit-frame-pointer"
 #valgrind -ggdb -Wunused
