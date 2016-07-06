@@ -98,8 +98,12 @@ c-----------------------------------------------------------------------
          real :: ek, ek_scale
          !real, external :: glmax, glmin, glsum ! math.f
 
+         !--------------------------------------------------------------
+         ! Initialise stuff
+         !
          nn = nx1*ny1*nz1*nelv
 
+         !--------------------------------------------------------------
          ! Rescale random initial condition field
          ! to set the kinetic energy to Ek_0
          !
@@ -122,13 +126,13 @@ c-----------------------------------------------------------------------
             endif
          endif
 
-         call exitt()
-
-         ! call forward-backward iteration with revolve
+         !--------------------------------------------------------------
+         ! Call forward-backward iteration with revolve
+         !
          if (usr_debug.gt.0) then
             if (nid.eq.0) write(*,*) 'final time = ', param(11)
          endif
-         call fwd_bkw_rvlv(0, int(param(11)), rvlv_snaps, rvlv_info)
+         call nladj_fwd_bkw(0, int(param(11)), rvlv_snaps, rvlv_info, 1)
          call exitt()
 
       return
@@ -147,9 +151,9 @@ c-----------------------------------------------------------------------
 
          integer, intent(in) :: ix,iy,iz,iside,ieg
 
-         ux =  0.0
-         uy =  0.0
-         uz =  0.0
+         ux = 0.0
+         uy = 0.0
+         uz = 0.0
 
       return
       end

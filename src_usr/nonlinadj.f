@@ -2,19 +2,6 @@
       !
       ! Module for non-linear adjoint iterations.
       !
-      ! Currently includes the 'revolve' algorithm implemented by Oana Marin and
-      ! Michel Schanen. Jacopo Canton re-organised everything in this module,
-      ! commented and tested.
-      !
-      ! The 'revolve' algorithm is described in
-      !    Griewank, A. & Walther, A. 2000
-      !    "Algorithm 799: revolve: an implementation of checkpointing for the
-      !    reverse or adjoint mode of computational differentiation"
-      !    ACM Transaction on Mathematical Software, Vol. 26, pages 19--45
-      !
-      ! To works, this module needs to be linked with the C/C++ revolve
-      ! library.
-      !
       ! jcanton@mech.kth.se
 
       ! TODO
@@ -31,30 +18,71 @@
       !! real :: vy_nladj(lx1, ly1, lz1, lelv)
       !! real :: vz_nladj(lx1, ly1, lz1, lelv)
 
-      ! Interface to the functions in the revolve library
-      !
-      interface
-         function wrap_revolve(check, capo, fine, snaps, info, nid)
-            implicit none
-            integer :: wrap_revolve, check, capo, fine
-            integer :: snaps, info, nid
-         end function wrap_revolve 
-         subroutine wrap_revolve_reset()
-            implicit none
-         end subroutine wrap_revolve_reset
-         !FUNCTION adj_stack_empty()
-         !   implicit none
-         !   integer :: adj_stack_empty
-         !END FUNCTION adj_stack_empty 
-      end interface
-
       CONTAINS
+
 !==============================================================================
+!     UPDATE ROUTINES
+!==============================================================================
+
+!==============================================================================
+!     INTEGRATION ROUTINES
+!==============================================================================
+
+      subroutine nladj_fwd_bkw(it_0, it_end, snaps, info, alg)
+         !
+         ! Integrate the non-linear direct problem forward in time and the
+         ! non-linear adjoint problem backward.
+         ! This routine is a wrapper for different integration algorithms.
+         !
+         implicit none
+
+         include 'SIZE_DEF'
+         include 'SIZE' ! NID
+         include 'USERPAR' ! usr_debug
+
+         integer, intent(in) :: it_0, it_end, snaps, info, alg
+
+         select case(alg)
+
+            case(1)
+               !
+               ! REVOLVE ALGORITHM
+               if (usr_debug.gt.0 .and. nid.eq.0) then
+                  write(*,*) 'calling revolve algorithm' 	
+               endif
+               call fwd_bkw_rvlv(it_0, it_end, snaps, info)
+
+            case default
+               if(nid.eq.0) then
+                  write(*,*) '*** ERROR ***'
+                  write(*,*) 'Unknown "alg" in nl_fwd_bkw'
+                  write(*,*) '*** ERROR ***'
+               endif
+               call exitt()
+
+         end select
+
+      end subroutine nladj_fwd_bkw
+
+!------------------------------------------------------------------------------
 
       subroutine fwd_bkw_rvlv(capo_in, fine_in, snaps_in, info_in)
          !
          ! Integrate the direct problem forward in time and the non-linear
          ! adjoint problem backward using the 'revolve' algorithm.
+         !
+         ! Currently includes the 'revolve' algorithm implemented by Oana Marin
+         ! and Michel Schanen. Jacopo Canton re-organised everything in this
+         ! module, commented and tested.
+         !
+         ! The 'revolve' algorithm is described in
+         !    Griewank, A. & Walther, A. 2000
+         !    "Algorithm 799: revolve: an implementation of checkpointing for
+         !    the reverse or adjoint mode of computational differentiation"
+         !    ACM Transaction on Mathematical Software, Vol. 26, pages 19--45
+         !
+         ! For this routine to work, this module needs to be linked with the
+         ! C/C++ revolve library.
          !
          implicit none
 
@@ -69,6 +97,23 @@
          include 'ADJOINT_DEF' ! IFADJ
          include 'ADJOINT'
          include 'USERPAR' ! usr_debug
+
+         ! Interface to the functions in the revolve library
+         !
+         interface
+            function wrap_revolve(check, capo, fine, snaps, info, nid)
+               implicit none
+               integer :: wrap_revolve, check, capo, fine
+               integer :: snaps, info, nid
+            end function wrap_revolve 
+            subroutine wrap_revolve_reset()
+               implicit none
+            end subroutine wrap_revolve_reset
+            !FUNCTION adj_stack_empty()
+            !   implicit none
+            !   integer :: adj_stack_empty
+            !END FUNCTION adj_stack_empty 
+         end interface
 
          integer, intent(in) :: capo_in, fine_in, snaps_in, info_in
          integer :: capo, fine, snaps, info, whatodo, check, oldcapo
@@ -160,7 +205,12 @@
                call copy(chkp(:,2,check+1,3), vy,               nn)
                call copy(chkp(:,3,check+1,3), vz,               nn)
             case default
-               if(nid.eq.0) write(*,*) 'Error!'
+               if(nid.eq.0) then
+                  write(*,*) '*** ERROR ***'
+                  write(*,*) 'Unknown "whatodo" in fwd_bkw_rvlv'
+                  write(*,*) '*** ERROR ***'
+               endif
+               call exitt()
          end select
          
          ! revolve algorithm
@@ -350,7 +400,12 @@
             case default
                !
                ! Something wrong happened
-               if(nid .eq. 0) write(*,*) 'Error!'
+               if(nid.eq.0) then
+                  write(*,*) '*** ERROR ***'
+                  write(*,*) 'Unknown "whatodo" in fwd_bkw_rvlv'
+                  write(*,*) '*** ERROR ***'
+               endif
+               call exitt()
 
             end select
 
