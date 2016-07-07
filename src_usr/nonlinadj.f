@@ -48,8 +48,8 @@
          real    :: tol
          integer :: ite, maxit
 
-         real :: res
-         !real, dimension(nlopt_maxit) :: res
+         real, dimension(nlopt_maxit) :: res
+         !real :: res
 
          real :: udx(lx1, ly1, lz1, lelv), ! direct velocity field
      $           udy(lx1, ly1, lz1, lelv),
@@ -80,12 +80,12 @@
          !---------------------------------------------------------------------
          ! Call forward-backward iterations
          !
-         ite = 1
-         !res(1) = 1e3
-         res = 1e3
+         ite = 2
+         res(1) = 1e3
+         !res = 1e3
 
-         !do while (res(ite) .ge. tol .and. ite .le. maxit)
-         do while (res .ge. tol .and. ite .le. maxit)
+         do while (res(ite-1) .ge. tol .and. ite .le. maxit)
+         !do while (res .ge. tol .and. ite .le. maxit)
             !
             ! integrate forward and backward
             call nladj_fwd_bkw(it_0, it_end, rvlv_snaps, fwd_bkw_alg)
@@ -96,7 +96,7 @@
             call copy(uaz, vzp, nn)
             !
             ! update iterate
-            call nlopt_update(res,
+            call nlopt_update(res(ite),
      $                        udx,udy,udz, uax,uay,uaz,
      $                        update_alg)
             !
@@ -111,8 +111,8 @@
             !
             if (usr_debug.gt.0) then
                if (nid.eq.0) then
-                  !write(*,*) 'ite ', ite, ' res = ', res(ite)
-                  write(*,*) 'ite ', ite, ' res = ', res
+                  write(*,*) 'ite ', ite-1, ' res = ', res(ite)
+                  !write(*,*) 'ite ', ite, ' res = ', res
                endif
             endif
             !
@@ -212,11 +212,22 @@
          !
          aa = eps**2*ek_d
          bb = 2*eps*(ek_d - eps*ek_da)
-         cc = ek_d + eps**2*ek_a - 2*eps*ek_da - ek0
+         cc = eps**2*ek_a - 2*eps*ek_da
+         !
+         if (usr_debug.gt.0) then
+            if (nid.eq.0) write(*,*) 'ek_0  = ', ek0
+            if (nid.eq.0) write(*,*) 'ek_d  = ', ek_d
+            if (nid.eq.0) write(*,*) 'ek_a  = ', ek_a
+            if (nid.eq.0) write(*,*) 'ek_da = ', ek_da
+            if (nid.eq.0) write(*,*) 'a = ', aa
+            if (nid.eq.0) write(*,*) 'b = ', bb
+            if (nid.eq.0) write(*,*) 'c = ', cc
+         endif
          !
          lambda_1 = (-bb + sqrt(bb**2 - 4*aa*cc))/(2*aa)
          lambda_2 = (-bb - sqrt(bb**2 - 4*aa*cc))/(2*aa)
          lambda   = lambda_1 ! TODO works with lambda_2 as well (?!?)
+         !
          if (usr_debug.gt.0) then
             if (nid.eq.0) write(*,*) 'lambda = ', lambda
          endif
@@ -247,6 +258,10 @@
          call add2(udx, tmpx, nn)
          call add2(udy, tmpy, nn)
          call add2(udz, tmpz, nn)
+
+         if (usr_debug.gt.0) then
+            if (nid.eq.0) write(*,*) ''
+         endif
 
       end subroutine nlopt_stpst_ascnt
 
