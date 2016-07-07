@@ -1,5 +1,5 @@
 0.5    # R   = pipe radius
-3.141592653589793 # L   = pipe length
+1.5707963267948966 # L   = pipe length
 #
 10     # nR  = number of elements on the radius (has to be > nTh/8)
 1.5    # rP0 = radius "penalization", inner part
