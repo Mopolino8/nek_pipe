@@ -334,7 +334,7 @@
 
          include 'SIZE_DEF' ! LDMT1
          include 'SIZE'
-         include 'TSTEP_DEF' ! ISTEP
+         include 'TSTEP_DEF' ! ISTEP, NBDINP
          include 'TSTEP' ! DT
          include 'INPUT_DEF'
          include 'INPUT' ! IFPERT
@@ -366,7 +366,7 @@
          logical :: first
          !
          real :: cfl
-         integer :: nn
+         integer :: nn, time_order
          real, allocatable :: chkp(:,:,:,:)
 
 
@@ -420,12 +420,25 @@
          !
          first = .true.
 
+         ! Initialise stuff
+         !
+         time_order = nbdinp
+         !
+         if (.not.(time_order.eq.1 .or. time_order.eq.3)) then
+            if(nid.eq.0) then
+               write(*,*) '*** ERROR ***'
+               write(*,*) 'Only time order = 1 and 3'
+               write(*,*) 'have been implemented in fwd_bkw_rvlv'
+               write(*,*) '*** ERROR ***'
+            endif
+            call exitt()
+         endif
 
          ! Allocate checkpointing arrays
          !
          nn = nx1*ny1*nz1*nelv
          !
-         allocate(chkp(nn,3,snaps,nbdinp))
+         allocate(chkp(nn,3,snaps,time_order))
 
 
          ! Initialise the algorithm
@@ -439,17 +452,28 @@
          select case(whatodo) 
             case(2)
                if (info.gt.0) then
-                  write(*,*) 'Store in checkpoint number ',check, '.'
+                  if (nid.eq.0) write(*,*) 'Store in checkpoint number',
+     $                                     check, '.'
                endif
-               call copy(chkp(:,1,check+1,1), vxlag(1,1,1,1,1), nn)
-               call copy(chkp(:,2,check+1,1), vylag(1,1,1,1,1), nn)
-               call copy(chkp(:,3,check+1,1), vzlag(1,1,1,1,1), nn)
-               call copy(chkp(:,1,check+1,2), vxlag(1,1,1,1,2), nn)
-               call copy(chkp(:,2,check+1,2), vylag(1,1,1,1,2), nn)
-               call copy(chkp(:,3,check+1,2), vzlag(1,1,1,1,2), nn)
-               call copy(chkp(:,1,check+1,3), vx,               nn)
-               call copy(chkp(:,2,check+1,3), vy,               nn)
-               call copy(chkp(:,3,check+1,3), vz,               nn)
+               !
+               select case (time_order)
+                  case(1)
+                     call copy(chkp(:,1,check+1,1), vx,              nn)
+                     call copy(chkp(:,2,check+1,1), vy,              nn)
+                     call copy(chkp(:,3,check+1,1), vz,              nn)
+                  case(3)
+                     call copy(chkp(:,1,check+1,1), vxlag(1,1,1,1,1),nn)
+                     call copy(chkp(:,2,check+1,1), vylag(1,1,1,1,1),nn)
+                     call copy(chkp(:,3,check+1,1), vzlag(1,1,1,1,1),nn)
+                     call copy(chkp(:,1,check+1,2), vxlag(1,1,1,1,2),nn)
+                     call copy(chkp(:,2,check+1,2), vylag(1,1,1,1,2),nn)
+                     call copy(chkp(:,3,check+1,2), vzlag(1,1,1,1,2),nn)
+                     call copy(chkp(:,1,check+1,3), vx,              nn)
+                     call copy(chkp(:,2,check+1,3), vy,              nn)
+                     call copy(chkp(:,3,check+1,3), vz,              nn)
+                  case default
+               end select
+               !
             case default
                if(nid.eq.0) then
                   write(*,*) '*** ERROR ***'
@@ -501,15 +525,24 @@
                   if (nid.eq.0) write(*,*) 'Store in checkpoint number',
      $                                     check, '.'
                endif
-               call copy(chkp(:,1,check+1,1), vxlag(1,1,1,1,1), nn)
-               call copy(chkp(:,2,check+1,1), vylag(1,1,1,1,1), nn)
-               call copy(chkp(:,3,check+1,1), vzlag(1,1,1,1,1), nn)
-               call copy(chkp(:,1,check+1,2), vxlag(1,1,1,1,2), nn)
-               call copy(chkp(:,2,check+1,2), vylag(1,1,1,1,2), nn)
-               call copy(chkp(:,3,check+1,2), vzlag(1,1,1,1,2), nn)
-               call copy(chkp(:,1,check+1,3), vx,               nn)
-               call copy(chkp(:,2,check+1,3), vy,               nn)
-               call copy(chkp(:,3,check+1,3), vz,               nn)
+               !
+               select case (time_order)
+                  case(1)
+                     call copy(chkp(:,1,check+1,1), vx,              nn)
+                     call copy(chkp(:,2,check+1,1), vy,              nn)
+                     call copy(chkp(:,3,check+1,1), vz,              nn)
+                  case(3)
+                     call copy(chkp(:,1,check+1,1), vxlag(1,1,1,1,1),nn)
+                     call copy(chkp(:,2,check+1,1), vylag(1,1,1,1,1),nn)
+                     call copy(chkp(:,3,check+1,1), vzlag(1,1,1,1,1),nn)
+                     call copy(chkp(:,1,check+1,2), vxlag(1,1,1,1,2),nn)
+                     call copy(chkp(:,2,check+1,2), vylag(1,1,1,1,2),nn)
+                     call copy(chkp(:,3,check+1,2), vzlag(1,1,1,1,2),nn)
+                     call copy(chkp(:,1,check+1,3), vx,              nn)
+                     call copy(chkp(:,2,check+1,3), vy,              nn)
+                     call copy(chkp(:,3,check+1,3), vz,              nn)
+                  case default
+               end select
                !
                ! TODO useless?
                !if(firstvx.eqv..true.) then
@@ -533,6 +566,7 @@
                   call copy(vyp, vy, nn)
                   call copy(vzp, vz, nn)
                   ! TODO change sign? see eq.(33) in Kerswell et al. 2014
+                  ! seems not: in their pipe paper they don't
                   !call chsign(vxp, nn)
                   !call chsign(vyp, nn)
                   !call chsign(vzp, nn)
@@ -625,15 +659,24 @@
                   if (nid.eq.0) write(*,*) 'Restore from checkpoint',
      $                                     ' number ', check
                endif
-               call copy(vxlag(1,1,1,1,1), chkp(:,1,check+1,1), nn)
-               call copy(vylag(1,1,1,1,1), chkp(:,2,check+1,1), nn)
-               call copy(vzlag(1,1,1,1,1), chkp(:,3,check+1,1), nn)
-               call copy(vxlag(1,1,1,1,2), chkp(:,1,check+1,2), nn)
-               call copy(vylag(1,1,1,1,2), chkp(:,2,check+1,2), nn)
-               call copy(vzlag(1,1,1,1,2), chkp(:,3,check+1,2), nn)
-               call copy(vx,               chkp(:,1,check+1,3), nn)
-               call copy(vy,               chkp(:,2,check+1,3), nn)
-               call copy(vz,               chkp(:,3,check+1,3), nn)
+               !
+               select case (time_order)
+                  case(1)
+                     call copy(vx,               chkp(:,1,check+1,1),nn)
+                     call copy(vy,               chkp(:,2,check+1,1),nn)
+                     call copy(vz,               chkp(:,3,check+1,1),nn)
+                  case(3)
+                     call copy(vxlag(1,1,1,1,1), chkp(:,1,check+1,1),nn)
+                     call copy(vylag(1,1,1,1,1), chkp(:,2,check+1,1),nn)
+                     call copy(vzlag(1,1,1,1,1), chkp(:,3,check+1,1),nn)
+                     call copy(vxlag(1,1,1,1,2), chkp(:,1,check+1,2),nn)
+                     call copy(vylag(1,1,1,1,2), chkp(:,2,check+1,2),nn)
+                     call copy(vzlag(1,1,1,1,2), chkp(:,3,check+1,2),nn)
+                     call copy(vx,               chkp(:,1,check+1,3),nn)
+                     call copy(vy,               chkp(:,2,check+1,3),nn)
+                     call copy(vz,               chkp(:,3,check+1,3),nn)
+                  case default
+               end select
 
             case(6)
                !
